@@ -3,7 +3,5 @@ obj
 bin
 
 .idea
-
-*.s
-*.i
+*.user
 

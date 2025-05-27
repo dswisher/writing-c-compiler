@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using SwishCC.Lexing;
 
 namespace SwishCC
 {
@@ -23,8 +24,22 @@ namespace SwishCC
                 return 1;
             }
 
-            // Run the preprocessed file through the compiler
-            // TODO
+            // Run the preprocessed file through the lexer
+            var lexer = new Lexer();
+            var tokens = lexer.Tokenize(context.PreprocessedFilePath);
+
+            if (tokens == null)
+            {
+                Console.WriteLine("Lexer encountered an error.");
+                return 1;
+            }
+
+            if (options.Lexer)
+            {
+                return 0;
+            }
+
+            // TODO - parse, code gen, etc.
 
             // Assemble and link
             // TODO

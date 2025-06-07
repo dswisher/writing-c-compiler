@@ -1,0 +1,76 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace SwishCC.Lexing
+{
+    public class LexerContext
+    {
+        private readonly StringBuilder characterBuffer = new();
+        private readonly Dictionary<int, TokenType> charMap = new();
+
+        private int lineNumber;
+        private int columnNumber;
+
+
+        public LexerContext(LexerState startState, LexerReader lexerReader, LexerResult result)
+        {
+            CurrentState = startState;
+            LexerReader = lexerReader;
+            Result = result;
+
+            charMap.Add('{', TokenType.LeftCurly);
+            charMap.Add('}', TokenType.RightCurly);
+            charMap.Add('(', TokenType.LeftParen);
+            charMap.Add(')', TokenType.RightParen);
+            charMap.Add(';', TokenType.Semicolon);
+        }
+
+
+        public void EmitToken(TokenType tokenType)
+        {
+            var token = new LexerToken(tokenType, characterBuffer.ToString(), lineNumber, columnNumber);
+
+            Result.AppendToken(token);
+
+            characterBuffer.Clear();
+        }
+
+
+        public void AppendCharacter(int ch)
+        {
+            if (ch == -1)
+            {
+                throw new Exception("Attempt to append EOF to character buffer.");
+            }
+
+            if (characterBuffer.Length == 0)
+            {
+                lineNumber = LexerReader.LineNumber;
+                columnNumber = LexerReader.ColumnNumber;
+            }
+
+            characterBuffer.Append((char)ch);
+        }
+
+
+        public void EmitToken(int ch)
+        {
+            // Figure out what type of token to create
+            if (!charMap.TryGetValue(ch, out var tokenType))
+            {
+                // TODO - custom lexer exception
+                throw new Exception($"Do not know how to emit token for character '{(char)ch}'");
+            }
+
+            AppendCharacter(ch);
+
+            EmitToken(tokenType);
+        }
+
+
+        public LexerState CurrentState { get; set; }
+        public LexerReader LexerReader { get; }
+        public LexerResult Result { get; }
+    }
+}

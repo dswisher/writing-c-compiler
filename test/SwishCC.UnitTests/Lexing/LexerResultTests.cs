@@ -13,7 +13,9 @@ namespace SwishCC.UnitTests.Lexing
         public void PopTokenRemovesCurrent()
         {
             // Arrange
-            result.AppendToken(TokenType.Semicolon, 1, 1);
+            var token = new LexerToken(TokenType.Semicolon, ";", 1, 1);
+
+            result.AppendToken(token);
 
             // Act
             result.PopToken();

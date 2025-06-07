@@ -28,6 +28,7 @@ namespace SwishCC.UnitTests.Lexing
             result.Should().NotBeNull();
             result.CurrentToken.Should().NotBeNull();
             result.CurrentToken.TokenType.Should().Be(TokenType.Semicolon);
+            result.CurrentToken.Value.Should().Be(";");
             result.CurrentToken.Line.Should().Be(1);
             result.CurrentToken.Column.Should().Be(1);
         }
@@ -35,7 +36,11 @@ namespace SwishCC.UnitTests.Lexing
 
         [Theory]
         [InlineData(";", TokenType.Semicolon)]
+        [InlineData("(", TokenType.LeftParen)]
+        [InlineData(")", TokenType.RightParen)]
+        [InlineData("()", TokenType.LeftParen, TokenType.RightParen)]
         [InlineData("( ) { }", TokenType.LeftParen, TokenType.RightParen, TokenType.LeftCurly, TokenType.RightCurly)]
+        [InlineData("123", TokenType.Constant)]
         public void CanLexSingleLines(string input, params TokenType[] expectedTypes)
         {
             // Arrange

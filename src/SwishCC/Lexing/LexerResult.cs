@@ -9,9 +9,8 @@ namespace SwishCC.Lexing
         public LexerToken CurrentToken => tokens.First?.Value;
 
 
-        public void AppendToken(TokenType type, int line, int column)
+        public void AppendToken(LexerToken token)
         {
-            var token = new LexerToken(type, null, line, column);
             tokens.AddLast(token);
         }
 

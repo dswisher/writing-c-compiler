@@ -9,13 +9,9 @@ namespace SwishCC.Lexing
         LeftCurly,
         RightCurly,
 
-        // Identifiers and literals
+        // Identifiers, keywords, and literals
         Identifier,
         Constant,
-
-        // Keywords
-        Int,
-        Return,
-        Void
+        Keyword
     }
 }

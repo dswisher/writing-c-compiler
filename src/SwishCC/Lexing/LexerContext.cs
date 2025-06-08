@@ -9,9 +9,6 @@ namespace SwishCC.Lexing
         private readonly StringBuilder characterBuffer = new();
         private readonly Dictionary<int, TokenType> charMap = new();
 
-        private int lineNumber;
-        private int columnNumber;
-
 
         public LexerContext(LexerState startState, LexerReader lexerReader, LexerResult result)
         {
@@ -29,7 +26,7 @@ namespace SwishCC.Lexing
 
         public void EmitToken(TokenType tokenType)
         {
-            var token = new LexerToken(tokenType, characterBuffer.ToString(), lineNumber, columnNumber);
+            var token = new LexerToken(tokenType, characterBuffer.ToString(), LineNumber, ColumnNumber);
 
             Result.AppendToken(token);
 
@@ -46,8 +43,8 @@ namespace SwishCC.Lexing
 
             if (characterBuffer.Length == 0)
             {
-                lineNumber = LexerReader.LineNumber;
-                columnNumber = LexerReader.ColumnNumber;
+                LineNumber = LexerReader.LineNumber;
+                ColumnNumber = LexerReader.ColumnNumber;
             }
 
             characterBuffer.Append((char)ch);
@@ -71,6 +68,9 @@ namespace SwishCC.Lexing
 
         public LexerState CurrentState { get; set; }
         public LexerReader LexerReader { get; }
+        public string CurrentBuffer => characterBuffer.ToString();
+        public int LineNumber { get; private set; }
+        public int ColumnNumber { get; private set; }
         public LexerResult Result { get; }
     }
 }

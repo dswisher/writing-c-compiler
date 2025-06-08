@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using FluentAssertions;
 using SwishCC.Lexing;
@@ -34,6 +35,57 @@ namespace SwishCC.UnitTests.Lexing
         }
 
 
+        [Fact]
+        public void CanLexOneNumber()
+        {
+            // Arrange
+            var stream = new StringReader("564");
+
+            // Act
+            var result = lexer.Tokenize(stream);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.CurrentToken.Should().NotBeNull();
+            result.CurrentToken.TokenType.Should().Be(TokenType.Constant);
+            result.CurrentToken.Value.Should().Be("564");
+        }
+
+
+        [Fact]
+        public void CanLexOneIdentifier()
+        {
+            // Arrange
+            var stream = new StringReader("main");
+
+            // Act
+            var result = lexer.Tokenize(stream);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.CurrentToken.Should().NotBeNull();
+            result.CurrentToken.TokenType.Should().Be(TokenType.Identifier);
+            result.CurrentToken.Value.Should().Be("main");
+        }
+
+
+        [Fact]
+        public void CanLexOneKeyword()
+        {
+            // Arrange
+            var stream = new StringReader("int");
+
+            // Act
+            var result = lexer.Tokenize(stream);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.CurrentToken.Should().NotBeNull();
+            result.CurrentToken.TokenType.Should().Be(TokenType.Keyword);
+            result.CurrentToken.Value.Should().Be("int");
+        }
+
+
         [Theory]
         [InlineData(";", TokenType.Semicolon)]
         [InlineData("(", TokenType.LeftParen)]
@@ -41,6 +93,9 @@ namespace SwishCC.UnitTests.Lexing
         [InlineData("()", TokenType.LeftParen, TokenType.RightParen)]
         [InlineData("( ) { }", TokenType.LeftParen, TokenType.RightParen, TokenType.LeftCurly, TokenType.RightCurly)]
         [InlineData("123", TokenType.Constant)]
+        [InlineData("main", TokenType.Identifier)]
+        [InlineData("int", TokenType.Keyword)]
+        [InlineData("int\tmain", TokenType.Keyword, TokenType.Identifier)]
         public void CanLexSingleLines(string input, params TokenType[] expectedTypes)
         {
             // Arrange
@@ -51,6 +106,35 @@ namespace SwishCC.UnitTests.Lexing
 
             // Assert
             VerifyTokens(result, expectedTypes);
+        }
+
+
+        [Theory]
+        [InlineData("int main\n{\n}\n", TokenType.Keyword, TokenType.Identifier, TokenType.LeftCurly, TokenType.RightCurly)]
+        public void CanLexMultipleLines(string input, params TokenType[] expectedTypes)
+        {
+            // Arrange
+            var stream = new StringReader(input);
+
+            // Act
+            var result = lexer.Tokenize(stream);
+
+            // Assert
+            VerifyTokens(result, expectedTypes);
+        }
+
+
+        [Theory]
+        [InlineData("return 1foo;")]
+        public void CanDetectErrors(string input)
+        {
+            // Arrange
+            var stream = new StringReader(input);
+
+            Action act = () => lexer.Tokenize(stream);
+
+            // Act and assert
+            act.Should().Throw<Exception>();
         }
 
 

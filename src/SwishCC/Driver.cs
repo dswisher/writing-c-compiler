@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using SwishCC.Lexing;
 
@@ -71,10 +72,26 @@ namespace SwishCC
 
         private static bool PreprocessFile(Context context)
         {
+            var startInfo = new ProcessStartInfo();
+            startInfo.FileName = "gcc";
+            startInfo.Arguments = $"-E -P {context.InputFilePath} -o {context.PreprocessedFilePath}";
+            startInfo.RedirectStandardOutput = true;
+            startInfo.RedirectStandardError = true;
+            var process = new Process();
+            process.StartInfo = startInfo;
+            process.Start();
+            process.WaitForExit();
+
+            // Read the output and error streams
+            var output = process.StandardOutput.ReadToEnd();
+            var error = process.StandardError.ReadToEnd();
+
+            // TODO - do something with the output and error
+
             // TODO - do the preprocessing
-            File.Copy(context.InputFilePath, context.PreprocessedFilePath, true);   // TODO - HACK!
 
             // No errors!
+            // TODO - actually check for errors
             return true;
         }
 

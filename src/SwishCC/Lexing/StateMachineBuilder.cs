@@ -1,13 +1,20 @@
+using System;
+using System.Collections.Generic;
+
 namespace SwishCC.Lexing
 {
     public static class StateMachineBuilder
     {
+        private static readonly HashSet<string> Keywords = ["int", "void", "return"];
+
+
         public static (LexerState, LexerState) BuildStateMachine()
         {
             // - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             // Create all the states to make sure they exist, so we can link them together in any order.
             var lookingForToken = new LexerState("LookingForToken");    // aka "idle"
             var inConstant = new LexerState("InConstant");
+            var inIdentifierOrKeyword = new LexerState("InIdentifier");
             var done = new LexerState("Done");
 
             // - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -17,13 +24,17 @@ namespace SwishCC.Lexing
                 {
                     ctx.CurrentState = done;
                 })
-                .AddTransition(" ", (_, ctx) =>
+                .AddTransition(" \n\t", (_, ctx) =>
                 {
                     ctx.LexerReader.Advance();
                 })
                 .AddTransition("0123456789", (_, ctx) =>
                 {
                     ctx.CurrentState = inConstant;
+                })
+                .AddTransition("a-zA-Z_", (_, ctx) =>
+                {
+                    ctx.CurrentState = inIdentifierOrKeyword;
                 })
                 .AddTransition(";{}()", (ch, ctx) =>
                 {
@@ -39,9 +50,29 @@ namespace SwishCC.Lexing
                     ctx.AppendCharacter(ch);
                     ctx.LexerReader.Advance();
                 })
+                .AddTransition("a-zA-Z_", (_, ctx) =>
+                {
+                    throw new Exception($"Invalid identifier at line {ctx.LineNumber}, column {ctx.ColumnNumber}.");
+                })
                 .Otherwise((_, ctx) =>
                 {
                     ctx.EmitToken(TokenType.Constant);
+                    ctx.CurrentState = lookingForToken;
+                });
+
+            // - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+            // Working on building an identifier or keyword
+            inIdentifierOrKeyword
+                .AddTransition("a-zA-Z_", (ch, ctx) =>
+                {
+                    ctx.AppendCharacter(ch);
+                    ctx.LexerReader.Advance();
+                })
+                .Otherwise((_, ctx) =>
+                {
+                    var tokenType = Keywords.Contains(ctx.CurrentBuffer) ? TokenType.Keyword : TokenType.Identifier;
+
+                    ctx.EmitToken(tokenType);
                     ctx.CurrentState = lookingForToken;
                 });
 

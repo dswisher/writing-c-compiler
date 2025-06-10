@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace SwishCC.Lexing
@@ -15,9 +16,18 @@ namespace SwishCC.Lexing
         }
 
 
-        public void PopToken()
+        public LexerToken PopToken()
         {
+            var token = tokens.First;
+
+            if (token == null)
+            {
+                throw new Exception("Attempt to pop token from empty token list.");
+            }
+
             tokens.RemoveFirst();
+
+            return token.Value;
         }
     }
 }

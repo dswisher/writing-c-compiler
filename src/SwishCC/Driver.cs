@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using SwishCC.Lexing;
+using SwishCC.Parsing;
 
 namespace SwishCC
 {
@@ -35,7 +36,21 @@ namespace SwishCC
                 return 1;
             }
 
-            if (options.Lexer)
+            if (options.LexerOnly)
+            {
+                return 0;
+            }
+
+            // Parse
+            var parser = new Parser();
+            var ast = parser.Parse(tokens);
+
+            if (options.PrintAst)
+            {
+                // TODO - print the AST
+            }
+
+            if (options.ParseOnly)
             {
                 return 0;
             }

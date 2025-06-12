@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using SwishCC.AST;
 using SwishCC.Lexing;
 using SwishCC.Parsing;
 
@@ -27,6 +28,8 @@ namespace SwishCC
             }
 
             // Run the preprocessed file through the lexer
+            Console.WriteLine("Lexing...");
+
             var lexer = new Lexer();
             var tokens = lexer.Tokenize(context.PreprocessedFilePath);
 
@@ -42,6 +45,8 @@ namespace SwishCC
             }
 
             // Parse
+            Console.WriteLine("Parsing...");
+
             var parser = new Parser();
             var ast = parser.Parse(tokens);
 
@@ -55,10 +60,14 @@ namespace SwishCC
                 return 0;
             }
 
-            // TODO - parse, code gen, etc.
+            // Convert the AST to an assembly (.s) file
+            CreateAssemblyFile(context, ast);
 
             // Assemble and link
-            // TODO
+            if (!AssembleAndLink(context))
+            {
+                return 2;
+            }
 
             // Clean up the intermediate files
             Cleanup(context);
@@ -70,15 +79,16 @@ namespace SwishCC
 
         private static Context CreateContext(Options options)
         {
+            var path = Path.GetDirectoryName(options.FilePath);
             var baseFileName = Path.GetFileNameWithoutExtension(options.FilePath);
 
             var context = new Context
             {
                 Options = options,
                 InputFilePath = options.FilePath,
-                PreprocessedFilePath = $"{baseFileName}.i",
-                AssemblyFilePath = $"{baseFileName}.s",
-                ExecutableFilePath = baseFileName
+                PreprocessedFilePath = Path.Join(path, $"{baseFileName}.i"),
+                AssemblyFilePath = Path.Join(path, $"{baseFileName}.s"),
+                ExecutableFilePath = Path.Join(path, baseFileName)
             };
 
             return context;
@@ -87,6 +97,8 @@ namespace SwishCC
 
         private static bool PreprocessFile(Context context)
         {
+            Console.WriteLine($"Preprocessing {context.InputFilePath} -> {context.PreprocessedFilePath}");
+
             var startInfo = new ProcessStartInfo();
             startInfo.FileName = "gcc";
             startInfo.Arguments = $"-E -P {context.InputFilePath} -o {context.PreprocessedFilePath}";
@@ -103,7 +115,51 @@ namespace SwishCC
 
             // TODO - do something with the output and error
 
-            // TODO - do the preprocessing
+            // No errors!
+            // TODO - actually check for errors
+            return true;
+        }
+
+
+        private static bool CreateAssemblyFile(Context context, TreeNode ast)
+        {
+            Console.WriteLine($"Creating assembly file {context.AssemblyFilePath}");
+
+            // TODO - this is a hack, until TACKY
+            using (var writer = new StreamWriter(context.AssemblyFilePath))
+            {
+                // NOTE: On MAC, need "_main" instead of "main"
+
+                // writer.WriteLine(".section .text");
+                writer.WriteLine("    .globl _main");
+                writer.WriteLine("_main:");
+                writer.WriteLine("    movl $2, %eax");
+                writer.WriteLine("    ret");
+            }
+
+            return true;
+        }
+
+
+        private static bool AssembleAndLink(Context context)
+        {
+            Console.WriteLine($"Assembling and linking {context.AssemblyFilePath} -> {context.ExecutableFilePath}");
+
+            var startInfo = new ProcessStartInfo();
+            startInfo.FileName = "gcc";
+            startInfo.Arguments = $"{context.AssemblyFilePath} -o {context.ExecutableFilePath}";
+            startInfo.RedirectStandardOutput = true;
+            startInfo.RedirectStandardError = true;
+            var process = new Process();
+            process.StartInfo = startInfo;
+            process.Start();
+            process.WaitForExit();
+
+            // Read the output and error streams
+            var output = process.StandardOutput.ReadToEnd();
+            var error = process.StandardError.ReadToEnd();
+
+            // TODO - do something with the output and error
 
             // No errors!
             // TODO - actually check for errors
@@ -125,7 +181,10 @@ namespace SwishCC
                 File.Delete(context.PreprocessedFilePath);
             }
 
-            // TODO - clean up the assembly file (.s)
+            if (File.Exists(context.AssemblyFilePath))
+            {
+                File.Delete(context.AssemblyFilePath);
+            }
         }
 
 

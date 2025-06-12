@@ -61,12 +61,15 @@ namespace SwishCC
             }
 
             // Convert the AST to an assembly (.s) file
-            CreateAssemblyFile(context, ast);
+            if (!CreateAssemblyFile(context, ast))
+            {
+                return 2;
+            }
 
             // Assemble and link
             if (!AssembleAndLink(context))
             {
-                return 2;
+                return 3;
             }
 
             // Clean up the intermediate files
@@ -125,19 +128,28 @@ namespace SwishCC
         {
             Console.WriteLine($"Creating assembly file {context.AssemblyFilePath}");
 
-            // TODO - this is a hack, until TACKY
-            using (var writer = new StreamWriter(context.AssemblyFilePath))
+            if (ast is ProgramNode pn)
             {
-                // NOTE: On MAC, need "_main" instead of "main"
+                var val = pn.FunctionDefinition.Body.Expression.Value;
 
-                // writer.WriteLine(".section .text");
-                writer.WriteLine("    .globl _main");
-                writer.WriteLine("_main:");
-                writer.WriteLine("    movl $2, %eax");
-                writer.WriteLine("    ret");
+                // TODO - this is a hack, until TACKY
+                using (var writer = new StreamWriter(context.AssemblyFilePath))
+                {
+                    // NOTE: On MAC, need "_main" instead of "main"
+
+                    // writer.WriteLine(".section .text");
+                    writer.WriteLine("    .globl _main");
+                    writer.WriteLine("_main:");
+                    writer.WriteLine($"    movl ${val}, %eax");
+                    writer.WriteLine("    ret");
+                }
+
+                return true;
             }
 
-            return true;
+            Console.WriteLine("Error: AST is not a ProgramNode.");
+
+            return false;
         }
 
 

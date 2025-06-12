@@ -46,8 +46,8 @@ namespace SwishCC.Parsing
             tokens.ExpectAndPopToken(TokenType.LeftCurly);
 
             // TODO - parse statements - this is a quick hack
-            tokens.ExpectAndPopKeyword("return");
-            tokens.ExpectAndPopToken(TokenType.Constant);
+            functionNode.Body = ParseReturn(tokens);
+
             tokens.ExpectAndPopToken(TokenType.Semicolon);
 
             tokens.ExpectAndPopToken(TokenType.RightCurly);
@@ -55,6 +55,23 @@ namespace SwishCC.Parsing
             tokens.ExpectEnd();
 
             return functionNode;
+        }
+
+
+        private ReturnNode ParseReturn(LexerResult tokens)
+        {
+            tokens.ExpectAndPopKeyword("return");
+            var constant = tokens.ExpectAndPopToken(TokenType.Constant);
+
+            var returnNode = new ReturnNode
+            {
+                Expression = new ConstantNode()
+                {
+                    Value = int.Parse(constant.Value)
+                }
+            };
+
+            return returnNode;
         }
     }
 }

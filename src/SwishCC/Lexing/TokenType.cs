@@ -9,6 +9,10 @@ namespace SwishCC.Lexing
         LeftCurly,
         RightCurly,
 
+        Tilde,
+        Hyphen,
+        TwoHyphens,
+
         // Identifiers, keywords, and literals
         Identifier,
         Constant,

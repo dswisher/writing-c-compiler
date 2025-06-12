@@ -21,6 +21,7 @@ namespace SwishCC.Lexing
             charMap.Add('(', TokenType.LeftParen);
             charMap.Add(')', TokenType.RightParen);
             charMap.Add(';', TokenType.Semicolon);
+            charMap.Add('~', TokenType.Tilde);
         }
 
 

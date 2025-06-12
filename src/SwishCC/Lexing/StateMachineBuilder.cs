@@ -15,6 +15,7 @@ namespace SwishCC.Lexing
             var lookingForToken = new LexerState("LookingForToken");    // aka "idle"
             var inConstant = new LexerState("InConstant");
             var inIdentifierOrKeyword = new LexerState("InIdentifier");
+            var sawHyphen = new LexerState("SawHyphen");
             var done = new LexerState("Done");
 
             // - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -36,7 +37,13 @@ namespace SwishCC.Lexing
                 {
                     ctx.CurrentState = inIdentifierOrKeyword;
                 })
-                .AddTransition(";{}()", (ch, ctx) =>
+                .AddTransition("-", (ch, ctx) =>
+                {
+                    ctx.AppendCharacter(ch);
+                    ctx.LexerReader.Advance();
+                    ctx.CurrentState = sawHyphen;
+                })
+                .AddTransition(";{}()~", (ch, ctx) =>
                 {
                     ctx.EmitToken(ch);
                     ctx.LexerReader.Advance();
@@ -73,6 +80,22 @@ namespace SwishCC.Lexing
                     var tokenType = Keywords.Contains(ctx.CurrentBuffer) ? TokenType.Keyword : TokenType.Identifier;
 
                     ctx.EmitToken(tokenType);
+                    ctx.CurrentState = lookingForToken;
+                });
+
+            // - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+            // Just saw a hyphen, so we need to check if it's a double hyphen or not.
+            sawHyphen
+                .AddTransition("-", (ch, ctx) =>
+                {
+                    ctx.AppendCharacter(ch);
+                    ctx.LexerReader.Advance();
+                    ctx.EmitToken(TokenType.TwoHyphens);
+                    ctx.CurrentState = lookingForToken;
+                })
+                .Otherwise((_, ctx) =>
+                {
+                    ctx.EmitToken(TokenType.Hyphen);
                     ctx.CurrentState = lookingForToken;
                 });
 

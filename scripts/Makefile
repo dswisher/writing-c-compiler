@@ -3,32 +3,37 @@ TEST_PATH=$(HOME)/git/other/writing-a-c-compiler-tests
 DRIVER_PATH=$(HOME)/git/dswisher/writing-c-compiler/scripts/swish-cc.sh
 
 
-.PHONY: main1 lex1 codegen1 chapter1
+.PHONY: main1 lex1 parse1 codegen1 chapter1 lex2 parse2
 
 main: chapter1
 
 
-lex1:
+bars:
 	@echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
 	@echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
+
+
+lex1: bars
 	cd $(TEST_PATH) && \
 	./test_compiler $(DRIVER_PATH) --chapter 1 --stage lex
 
-parse1:
-	@echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
-	@echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
+
+parse1: bars
 	cd $(TEST_PATH) && \
 	./test_compiler $(DRIVER_PATH) --chapter 1 --stage parse
 
-codegen1:
-	@echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
-	@echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
+
+codegen1: bars
 	cd $(TEST_PATH) && \
 	./test_compiler $(DRIVER_PATH) --chapter 1 --stage codegen
 
-chapter1:
-	@echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
-	@echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
+
+chapter1: bars
 	cd $(TEST_PATH) && \
 	./test_compiler $(DRIVER_PATH) --chapter 1
+
+
+lex2: bars
+	cd $(TEST_PATH) && \
+	./test_compiler $(DRIVER_PATH) --chapter 2 --stage lex
 

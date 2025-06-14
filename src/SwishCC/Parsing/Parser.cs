@@ -1,4 +1,3 @@
-using System;
 using SwishCC.AST;
 using SwishCC.Lexing;
 
@@ -8,20 +7,12 @@ namespace SwishCC.Parsing
     {
         public TreeNode Parse(LexerResult tokens)
         {
-            try
+            var programNode = new ProgramNode
             {
-                var programNode = new ProgramNode
-                {
-                    FunctionDefinition = ParseFunction(tokens)
-                };
+                FunctionDefinition = ParseFunction(tokens)
+            };
 
-                return programNode;
-            }
-            catch (ParseException ex)
-            {
-                Console.WriteLine(ex);
-                throw;
-            }
+            return programNode;
         }
 
 
@@ -61,17 +52,77 @@ namespace SwishCC.Parsing
         private ReturnNode ParseReturn(LexerResult tokens)
         {
             tokens.ExpectAndPopKeyword("return");
-            var constant = tokens.ExpectAndPopToken(TokenType.Constant);
 
             var returnNode = new ReturnNode
             {
-                Expression = new ConstantNode()
-                {
-                    Value = int.Parse(constant.Value)
-                }
+                Expression = ParseExpression(tokens)
             };
 
             return returnNode;
+        }
+
+
+        private ExpressionNode ParseExpression(LexerResult tokens)
+        {
+            // We should not be at the end
+            if (tokens.CurrentToken == null)
+            {
+                throw new ParseException("Unexpected end of input while parsing expression.");
+            }
+
+            // An expression might be a constant...
+            if (tokens.CurrentToken.TokenType == TokenType.Constant)
+            {
+                var constant = tokens.ExpectAndPopToken(TokenType.Constant);
+
+                return new ConstantExpressionNode
+                {
+                    Value = int.Parse(constant.Value)
+                };
+            }
+
+            // ...or an expression in parentheses...
+            if (tokens.CurrentToken.TokenType == TokenType.LeftParen)
+            {
+                tokens.ExpectAndPopToken(TokenType.LeftParen);
+
+                var innerExpression = ParseExpression(tokens);
+
+                tokens.ExpectAndPopToken(TokenType.RightParen);
+
+                return innerExpression;
+            }
+
+            // ...or a unary operator followed by an expression...
+            if (tokens.CurrentToken.TokenType == TokenType.Hyphen || tokens.CurrentToken.TokenType == TokenType.Tilde)
+            {
+                var unaryOp = ParseUnaryOperator(tokens.PopToken());
+                var innerExpression = ParseExpression(tokens);
+
+                return new UnaryExpressionNode
+                {
+                    Operator = unaryOp,
+                    Operand = innerExpression
+                };
+            }
+
+            throw new ParseException(tokens.CurrentToken, "Malformed expression.");
+        }
+
+
+        private UnaryOperator ParseUnaryOperator(LexerToken token)
+        {
+            if (token.TokenType == TokenType.Hyphen)
+            {
+                return UnaryOperator.Negation;
+            }
+
+            if (token.TokenType == TokenType.Tilde)
+            {
+                return UnaryOperator.Complement;
+            }
+
+            throw new ParseException(token, $"Unexpected token {token.TokenType} ({token.Value}) when parsing unary operator.");
         }
     }
 }

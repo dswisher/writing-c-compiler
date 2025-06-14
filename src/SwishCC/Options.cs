@@ -4,6 +4,9 @@ namespace SwishCC
 {
     public class Options
     {
+        [Option("quiet", HelpText = "Do not emit progress messages.")]
+        public bool Quiet { get; set; }
+
         [Option("lex", HelpText = "Run the lexer, but stop before parsing.")]
         public bool LexerOnly { get; set; }
 
@@ -11,7 +14,7 @@ namespace SwishCC
         public bool ParseOnly { get; set; }
 
         [Option("codegen", HelpText = "Run the lexer, parser, and assembly generation, but stop before code emission.")]
-        public bool CodeGen { get; set; }
+        public bool CodeGenOnly { get; set; }
 
         [Option('S', HelpText = "Emit an assembly file, but do not assemble or link it.")]
         public bool EmitAssembly { get; set; }

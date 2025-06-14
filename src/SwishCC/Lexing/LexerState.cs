@@ -22,7 +22,7 @@ namespace SwishCC.Lexing
         {
             if (!transitions.TryAdd(ch, action))
             {
-                throw new Exception($"Transition for character '{ch}' already exists in state {Name}");
+                throw new LexException($"Transition for character '{ch}' already exists in state {Name}");
             }
 
             return this;
@@ -35,7 +35,7 @@ namespace SwishCC.Lexing
             {
                 if (!transitions.TryAdd(ch, action))
                 {
-                    throw new Exception($"Transition for character '{ch}' already exists in state {Name}");
+                    throw new LexException($"Transition for character '{ch}' already exists in state {Name}");
                 }
             }
 
@@ -47,7 +47,7 @@ namespace SwishCC.Lexing
         {
             if (defaultAction != null)
             {
-                throw new Exception($"Default action already set for state {Name}");
+                throw new LexException($"Default action already set for state {Name}");
             }
 
             defaultAction = action;
@@ -73,8 +73,7 @@ namespace SwishCC.Lexing
             }
             else
             {
-                // TODO - handle unexpected character
-                throw new Exception($"Unexpected character '{(char)ch}' (0x{ch:X2}) in state {Name}");
+                throw new LexException($"Unexpected character '{(char)ch}' (0x{ch:X2}) in state {Name}");
             }
         }
     }

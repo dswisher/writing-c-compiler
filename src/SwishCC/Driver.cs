@@ -28,7 +28,10 @@ namespace SwishCC
             }
 
             // Run the preprocessed file through the lexer
-            Console.WriteLine("Lexing...");
+            if (!options.Quiet)
+            {
+                Console.WriteLine("Lexing...");
+            }
 
             var lexer = new Lexer();
             var tokens = lexer.Tokenize(context.PreprocessedFilePath);
@@ -45,7 +48,10 @@ namespace SwishCC
             }
 
             // Parse
-            Console.WriteLine("Parsing...");
+            if (!options.Quiet)
+            {
+                Console.WriteLine("Parsing...");
+            }
 
             var parser = new Parser();
             var ast = parser.Parse(tokens);
@@ -100,7 +106,10 @@ namespace SwishCC
 
         private static bool PreprocessFile(Context context)
         {
-            Console.WriteLine($"Preprocessing {context.InputFilePath} -> {context.PreprocessedFilePath}");
+            if (!context.Options.Quiet)
+            {
+                Console.WriteLine($"Preprocessing {context.InputFilePath} -> {context.PreprocessedFilePath}");
+            }
 
             var startInfo = new ProcessStartInfo();
             startInfo.FileName = "gcc";
@@ -126,8 +135,12 @@ namespace SwishCC
 
         private static bool CreateAssemblyFile(Context context, TreeNode ast)
         {
-            Console.WriteLine($"Creating assembly file {context.AssemblyFilePath}");
+            if (!context.Options.Quiet)
+            {
+                Console.WriteLine($"Creating assembly file {context.AssemblyFilePath}");
+            }
 
+#if false
             if (ast is ProgramNode pn)
             {
                 var val = pn.FunctionDefinition.Body.Expression.Value;
@@ -148,6 +161,9 @@ namespace SwishCC
             }
 
             Console.WriteLine("Error: AST is not a ProgramNode.");
+#endif
+
+            Console.WriteLine("Error: CreateAssemblyFile not implemented yet.");
 
             return false;
         }
@@ -155,7 +171,10 @@ namespace SwishCC
 
         private static bool AssembleAndLink(Context context)
         {
-            Console.WriteLine($"Assembling and linking {context.AssemblyFilePath} -> {context.ExecutableFilePath}");
+            if (!context.Options.Quiet)
+            {
+                Console.WriteLine($"Assembling and linking {context.AssemblyFilePath} -> {context.ExecutableFilePath}");
+            }
 
             var startInfo = new ProcessStartInfo();
             startInfo.FileName = "gcc";

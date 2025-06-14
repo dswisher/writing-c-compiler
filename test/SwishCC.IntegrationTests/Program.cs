@@ -1,7 +1,7 @@
 ﻿using System;
 using CommandLine;
 
-namespace SwishCC
+namespace SwishCC.IntegrationTests
 {
     public static class Program
     {
@@ -9,11 +9,11 @@ namespace SwishCC
         {
             try
             {
-                var driver = new Driver();
+                var runner = new TestRunner();
                 var parsed = Parser.Default.ParseArguments<Options>(args);
 
                 return parsed.MapResult(
-                    options => driver.Run(options),
+                    options => runner.Run(options),
                     _ => 1);
             }
             catch (Exception ex)

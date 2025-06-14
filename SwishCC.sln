@@ -11,6 +11,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{79BC5F78-4
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SwishCC.UnitTests", "test\SwishCC.UnitTests\SwishCC.UnitTests.csproj", "{3419D8F8-F795-40C9-8D86-225738B19E60}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SwishCC.IntegrationTests", "test\SwishCC.IntegrationTests\SwishCC.IntegrationTests.csproj", "{AADDEF68-710E-4337-B468-B3CF80EE5986}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -28,9 +30,14 @@ Global
 		{3419D8F8-F795-40C9-8D86-225738B19E60}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3419D8F8-F795-40C9-8D86-225738B19E60}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3419D8F8-F795-40C9-8D86-225738B19E60}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AADDEF68-710E-4337-B468-B3CF80EE5986}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AADDEF68-710E-4337-B468-B3CF80EE5986}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AADDEF68-710E-4337-B468-B3CF80EE5986}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AADDEF68-710E-4337-B468-B3CF80EE5986}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{829D8BEC-B166-408B-BF84-2A71ED2CF477} = {BB2B8257-30BB-475B-8EF9-A6A850CC3539}
 		{3419D8F8-F795-40C9-8D86-225738B19E60} = {79BC5F78-4F8D-4EBA-8F2A-0B8762F5AE6B}
+		{AADDEF68-710E-4337-B468-B3CF80EE5986} = {79BC5F78-4F8D-4EBA-8F2A-0B8762F5AE6B}
 	EndGlobalSection
 EndGlobal

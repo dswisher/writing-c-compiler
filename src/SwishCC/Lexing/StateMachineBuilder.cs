@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 
 namespace SwishCC.Lexing
@@ -59,7 +58,7 @@ namespace SwishCC.Lexing
                 })
                 .AddTransition("a-zA-Z_", (_, ctx) =>
                 {
-                    throw new Exception($"Invalid identifier at line {ctx.LineNumber}, column {ctx.ColumnNumber}.");
+                    throw new LexException($"Invalid identifier at line {ctx.LineNumber}, column {ctx.ColumnNumber}.");
                 })
                 .Otherwise((_, ctx) =>
                 {

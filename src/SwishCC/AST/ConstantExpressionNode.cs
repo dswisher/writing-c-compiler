@@ -1,6 +1,6 @@
 namespace SwishCC.AST
 {
-    public class ConstantNode : TreeNode
+    public class ConstantExpressionNode : ExpressionNode
     {
         public int Value { get; set; }
     }

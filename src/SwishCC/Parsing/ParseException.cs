@@ -9,5 +9,11 @@ namespace SwishCC.Parsing
             : base($"Parse error at {token.Line}:{token.Column} - {message} (Token: {token.TokenType} '{token.Value}')")
         {
         }
+
+
+        public ParseException(string message)
+            : base(message)
+        {
+        }
     }
 }

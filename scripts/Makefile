@@ -37,3 +37,7 @@ lex2: bars
 	cd $(TEST_PATH) && \
 	./test_compiler $(DRIVER_PATH) --chapter 2 --stage lex
 
+parse2: bars
+	cd $(TEST_PATH) && \
+	./test_compiler $(DRIVER_PATH) --chapter 2 --stage parse
+

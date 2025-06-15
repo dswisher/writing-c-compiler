@@ -4,6 +4,7 @@ using System.IO;
 using SwishCC.AST;
 using SwishCC.Lexing;
 using SwishCC.Parsing;
+using SwishCC.Tackying;
 
 namespace SwishCC
 {
@@ -56,12 +57,30 @@ namespace SwishCC
             var parser = new Parser();
             var ast = parser.Parse(tokens);
 
-            if (options.PrintAst)
+            if (options.DumpAst)
             {
-                // TODO - print the AST
+                var astWriter = new AstWriter();
+
+                astWriter.Write(ast, context.AstFilePath);
             }
 
             if (options.ParseOnly)
+            {
+                return 0;
+            }
+
+            // Convert the AST to TACKY
+            var tackyGenerator = new TackyGenerator();
+            var tacky = tackyGenerator.Generate(ast);
+
+            if (options.DumpTacky)
+            {
+                var tackyWriter = new TackyWriter();
+
+                tackyWriter.Write(tacky, context.TackyFilePath);
+            }
+
+            if (options.TackyOnly)
             {
                 return 0;
             }
@@ -96,6 +115,8 @@ namespace SwishCC
                 Options = options,
                 InputFilePath = options.FilePath,
                 PreprocessedFilePath = Path.Join(path, $"{baseFileName}.i"),
+                AstFilePath = Path.Join(path, $"{baseFileName}.ast"),
+                TackyFilePath = Path.Join(path, $"{baseFileName}.tacky"),
                 AssemblyFilePath = Path.Join(path, $"{baseFileName}.s"),
                 ExecutableFilePath = Path.Join(path, baseFileName)
             };
@@ -212,6 +233,16 @@ namespace SwishCC
                 File.Delete(context.PreprocessedFilePath);
             }
 
+            if (File.Exists(context.AstFilePath))
+            {
+                File.Delete(context.AstFilePath);
+            }
+
+            if (File.Exists(context.TackyFilePath))
+            {
+                File.Delete(context.TackyFilePath);
+            }
+
             if (File.Exists(context.AssemblyFilePath))
             {
                 File.Delete(context.AssemblyFilePath);
@@ -225,6 +256,8 @@ namespace SwishCC
 
             public string InputFilePath { get; set; }
             public string PreprocessedFilePath { get; set; }
+            public string AstFilePath { get; set; }
+            public string TackyFilePath { get; set; }
             public string AssemblyFilePath { get; set; }
             public string ExecutableFilePath { get; set; }
         }

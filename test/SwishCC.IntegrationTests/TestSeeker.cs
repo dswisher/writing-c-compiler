@@ -8,7 +8,7 @@ namespace SwishCC.IntegrationTests
 {
     public class TestSeeker
     {
-        public List<TestFile> FindTests(Options options)
+        public List<TestFile> FindTests(Models.Options options)
         {
             // Get the list of chapters
             var chapters = GetChapters(options);
@@ -27,7 +27,7 @@ namespace SwishCC.IntegrationTests
         }
 
 
-        private static List<int> GetChapters(Options options)
+        private static List<int> GetChapters(Models.Options options)
         {
             var chapters = new List<int>();
 
@@ -44,7 +44,7 @@ namespace SwishCC.IntegrationTests
         }
 
 
-        private static List<TestFile> FindTestFiles(Options options, int chapter)
+        private static List<TestFile> FindTestFiles(Models.Options options, int chapter)
         {
             var result = new List<TestFile>();
             var chapterSubDir = $"chapter_{chapter}";
@@ -89,7 +89,7 @@ namespace SwishCC.IntegrationTests
         }
 
 
-        private static (List<string> ValidDirs, List<string> InvalidDirs) GetDirs(Options options)
+        private static (List<string> ValidDirs, List<string> InvalidDirs) GetDirs(Models.Options options)
         {
             const string invalidLex = "invalid_lex";
             const string invalidParse = "invalid_parse";
@@ -104,7 +104,7 @@ namespace SwishCC.IntegrationTests
             var validDirs = new List<string> { valid };
             var invalidDirs = new List<string>();
 
-            if (options.LexerOnly)
+            if (options.Stage == Stage.Lex)
             {
                 invalidDirs.Add(invalidLex);
 
@@ -115,7 +115,7 @@ namespace SwishCC.IntegrationTests
                 validDirs.Add(invalidLabels);
                 validDirs.Add(invalidStructTags);
             }
-            else if (options.ParseOnly)
+            else if (options.Stage == Stage.Parse)
             {
                 invalidDirs.Add(invalidLex);
                 invalidDirs.Add(invalidParse);

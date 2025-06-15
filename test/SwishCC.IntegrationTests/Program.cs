@@ -10,7 +10,13 @@ namespace SwishCC.IntegrationTests
             try
             {
                 var runner = new TestRunner();
-                var parsed = Parser.Default.ParseArguments<Options>(args);
+
+                var parser = new Parser(with =>
+                {
+                    with.CaseInsensitiveEnumValues = true;
+                });
+
+                var parsed = parser.ParseArguments<Models.Options>(args);
 
                 return parsed.MapResult(
                     options => runner.Run(options),

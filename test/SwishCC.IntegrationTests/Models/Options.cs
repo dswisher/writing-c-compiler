@@ -1,20 +1,14 @@
 using CommandLine;
 
-namespace SwishCC.IntegrationTests
+namespace SwishCC.IntegrationTests.Models
 {
     public class Options
     {
         [Option("test-root", Default = "/Users/swisherd/git/other/writing-a-c-compiler-tests/tests", HelpText = "The root directory where the test files are located.")]
         public string TestRoot { get; set; }
 
-        [Option("lex", HelpText = "Run the lexer, but stop before parsing.")]
-        public bool LexerOnly { get; set; }
-
-        [Option("parse", HelpText = "Run the lexer and parser, but stop before assembly generation.")]
-        public bool ParseOnly { get; set; }
-
-        [Option("codegen", HelpText = "Run the lexer, parser, and assembly generation, but stop before code emission.")]
-        public bool CodeGenOnly { get; set; }
+        [Option("stage", HelpText = "The stage of the compiler to test.")]
+        public Stage Stage { get; set; }
 
         [Option("chapter", Required = true, HelpText = "Specify the chapter whose tests should be run.")]
         public int Chapter { get; set; }

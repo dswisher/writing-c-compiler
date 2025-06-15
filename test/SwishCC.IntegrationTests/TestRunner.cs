@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using SwishCC.IntegrationTests.Models;
 using SwishCC.Lexing;
 using SwishCC.Parsing;
@@ -11,8 +12,11 @@ namespace SwishCC.IntegrationTests
         private readonly TestSeeker testSeeker = new();
 
 
-        public int Run(Options options)
+        public int Run(Models.Options options)
         {
+            // Time it
+            var timer = Stopwatch.StartNew();
+
             // Load the list of expected results
             // TODO
 
@@ -22,7 +26,9 @@ namespace SwishCC.IntegrationTests
             Console.WriteLine($"Found {testFiles.Count} test files.");
 
             // Go through and run each test
-            var exitCode = 0;
+            var failedTests = 0;
+            var passedTests = 0;
+
             foreach (var testFile in testFiles)
             {
                 var compilerResult = RunOneTest(options, testFile);
@@ -33,7 +39,7 @@ namespace SwishCC.IntegrationTests
                     {
                         Console.WriteLine($"Valid test {testFile.SubPath} FAILED with exit code {compilerResult}.");
 
-                        exitCode = 1;
+                        failedTests += 1;
 
                         if (options.StopOnFailure)
                         {
@@ -44,6 +50,8 @@ namespace SwishCC.IntegrationTests
                     {
                         // TODO - if we compiled, run the resulting executable and check the result code
                         Console.WriteLine($"Valid test {testFile.SubPath} passed.");
+
+                        passedTests += 1;
                     }
                 }
                 else
@@ -52,7 +60,7 @@ namespace SwishCC.IntegrationTests
                     {
                         Console.WriteLine($"Invalid test {testFile.SubPath} did not fail.");
 
-                        exitCode = 1;
+                        failedTests += 1;
 
                         if (options.StopOnFailure)
                         {
@@ -62,25 +70,31 @@ namespace SwishCC.IntegrationTests
                     else
                     {
                         Console.WriteLine($"Invalid test {testFile.SubPath} passed, with exit code {compilerResult}.");
+
+                        passedTests += 1;
                     }
                 }
             }
 
+            // Report!
+            Console.WriteLine($"{testFiles.Count} tests run, {passedTests} passed, {failedTests} failed, in {timer.Elapsed:hh\\:mm\\:ss}.");
+
             // Return the exit code
-            return exitCode;
+            return failedTests > 0 ? 1 : 0;
         }
 
 
-        private static int RunOneTest(Options options, TestFile testFile)
+        private static int RunOneTest(Models.Options options, TestFile testFile)
         {
             try
             {
                 var driver = new Driver();
                 var driverOptions = new DriverOps
                 {
-                    LexerOnly = options.LexerOnly,
-                    ParseOnly = options.ParseOnly,
-                    CodeGenOnly = options.CodeGenOnly,
+                    LexerOnly = options.Stage == Stage.Lex,
+                    ParseOnly = options.Stage == Stage.Parse,
+                    TackyOnly = options.Stage == Stage.Tacky,
+                    CodeGenOnly = options.Stage == Stage.CodeGen,
                     FilePath = testFile.FullPath,
                     Quiet = true
                 };

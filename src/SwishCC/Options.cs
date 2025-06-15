@@ -13,6 +13,9 @@ namespace SwishCC
         [Option("parse", HelpText = "Run the lexer and parser, but stop before assembly generation.")]
         public bool ParseOnly { get; set; }
 
+        [Option("tacky", HelpText = "Run the lexer, parser, and tacky generation, but stop before code generation.")]
+        public bool TackyOnly { get; set; }
+
         [Option("codegen", HelpText = "Run the lexer, parser, and assembly generation, but stop before code emission.")]
         public bool CodeGenOnly { get; set; }
 
@@ -25,7 +28,10 @@ namespace SwishCC
         [Option("keep", HelpText = "Keep the intermediate files generated during compilation (for debugging).")]
         public bool KeepIntermediateFiles { get; set; }
 
-        [Option("print-ast", HelpText = "Print the AST after parsing.")]
-        public bool PrintAst { get; set; }
+        [Option("dump-ast", HelpText = "Save the AST to a file.")]
+        public bool DumpAst { get; set; }
+
+        [Option("dump-tacky", HelpText = "Save the TACKY to a file.")]
+        public bool DumpTacky { get; set; }
     }
 }

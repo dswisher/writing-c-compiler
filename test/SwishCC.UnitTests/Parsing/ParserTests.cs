@@ -1,7 +1,7 @@
 using System.IO;
 using FluentAssertions;
-using SwishCC.AST;
 using SwishCC.Lexing;
+using SwishCC.Models.CTree;
 using SwishCC.Parsing;
 using Xunit;
 
@@ -35,7 +35,7 @@ namespace SwishCC.UnitTests.Parsing
 
             // Assert
             ast.Should().NotBeNull();
-            ast.Should().BeOfType<ProgramNode>();
+            ast.Should().BeOfType<CProgramNode>();
 
             // TODO - check the rest of the tree
         }
@@ -68,7 +68,7 @@ namespace SwishCC.UnitTests.Parsing
 
             // Assert
             ast.Should().NotBeNull();
-            ast.Should().BeOfType<ProgramNode>();
+            ast.Should().BeOfType<CProgramNode>();
 
             // TODO - check the rest of the tree
         }

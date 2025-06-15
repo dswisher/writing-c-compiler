@@ -1,8 +1,8 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using SwishCC.AST;
 using SwishCC.Lexing;
+using SwishCC.Models.CTree;
 using SwishCC.Parsing;
 using SwishCC.Tackying;
 
@@ -22,86 +22,91 @@ namespace SwishCC
             // Build out the paths of the intermediate files
             var context = CreateContext(options);
 
-            // Run the file through the preprocessor
-            if (!PreprocessFile(context))
+            try
             {
-                return 1;
-            }
+                // Run the file through the preprocessor
+                if (!PreprocessFile(context))
+                {
+                    return 1;
+                }
 
-            // Run the preprocessed file through the lexer
-            if (!options.Quiet)
-            {
-                Console.WriteLine("Lexing...");
-            }
+                // Run the preprocessed file through the lexer
+                if (!options.Quiet)
+                {
+                    Console.WriteLine("Lexing...");
+                }
 
-            var lexer = new Lexer();
-            var tokens = lexer.Tokenize(context.PreprocessedFilePath);
+                var lexer = new Lexer();
+                var tokens = lexer.Tokenize(context.PreprocessedFilePath);
 
-            if (tokens == null)
-            {
-                Console.WriteLine("Lexer encountered an error.");
-                return 1;
-            }
+                if (tokens == null)
+                {
+                    Console.WriteLine("Lexer encountered an error.");
+                    return 1;
+                }
 
-            if (options.LexerOnly)
-            {
+                if (options.LexerOnly)
+                {
+                    return 0;
+                }
+
+                // Parse
+                if (!options.Quiet)
+                {
+                    Console.WriteLine("Parsing...");
+                }
+
+                var parser = new Parser();
+                var ast = parser.Parse(tokens);
+
+                if (options.DumpAst)
+                {
+                    var astWriter = new AstWriter();
+
+                    astWriter.Write(ast, context.AstFilePath);
+                }
+
+                if (options.ParseOnly)
+                {
+                    return 0;
+                }
+
+                // Convert the AST to TACKY
+                var tackyGenerator = new TackyGenerator();
+                var tacky = tackyGenerator.EmitTacky(ast);
+
+                if (options.DumpTacky)
+                {
+                    var tackyWriter = new TackyWriter();
+
+                    tackyWriter.Write(tacky, context.TackyFilePath);
+                }
+
+                if (options.TackyOnly)
+                {
+                    return 0;
+                }
+
+                // Convert the AST to an assembly (.s) file
+                if (!CreateAssemblyFile(context, ast))
+                {
+                    return 2;
+                }
+
+                // Assemble and link
+                if (!AssembleAndLink(context))
+                {
+                    return 3;
+                }
+
+                // No errors!
                 return 0;
             }
-
-            // Parse
-            if (!options.Quiet)
+            finally
             {
-                Console.WriteLine("Parsing...");
+                // Clean up the intermediate files
+                Cleanup(context);
             }
-
-            var parser = new Parser();
-            var ast = parser.Parse(tokens);
-
-            if (options.DumpAst)
-            {
-                var astWriter = new AstWriter();
-
-                astWriter.Write(ast, context.AstFilePath);
-            }
-
-            if (options.ParseOnly)
-            {
-                return 0;
-            }
-
-            // Convert the AST to TACKY
-            var tackyGenerator = new TackyGenerator();
-            var tacky = tackyGenerator.Generate(ast);
-
-            if (options.DumpTacky)
-            {
-                var tackyWriter = new TackyWriter();
-
-                tackyWriter.Write(tacky, context.TackyFilePath);
-            }
-
-            if (options.TackyOnly)
-            {
-                return 0;
-            }
-
-            // Convert the AST to an assembly (.s) file
-            if (!CreateAssemblyFile(context, ast))
-            {
-                return 2;
-            }
-
-            // Assemble and link
-            if (!AssembleAndLink(context))
-            {
-                return 3;
-            }
-
-            // Clean up the intermediate files
-            Cleanup(context);
-
-            // No errors!
-            return 0;
         }
 
 
@@ -154,7 +159,7 @@ namespace SwishCC
         }
 
 
-        private static bool CreateAssemblyFile(Context context, TreeNode ast)
+        private static bool CreateAssemblyFile(Context context, CProgramNode ast)
         {
             if (!context.Options.Quiet)
             {

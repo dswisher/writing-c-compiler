@@ -3,6 +3,7 @@ using System.Diagnostics;
 using SwishCC.IntegrationTests.Models;
 using SwishCC.Lexing;
 using SwishCC.Parsing;
+using SwishCC.Tackying;
 using DriverOps = SwishCC.Options;
 
 namespace SwishCC.IntegrationTests
@@ -108,6 +109,10 @@ namespace SwishCC.IntegrationTests
             catch (ParseException)
             {
                 return 2;
+            }
+            catch (TackyException)
+            {
+                return 3;
             }
             catch (Exception)
             {

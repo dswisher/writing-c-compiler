@@ -1,8 +1,8 @@
-namespace SwishCC.AST
+namespace SwishCC.Models.CTree
 {
-    public class Identifier
+    public class CIdentifierNode
     {
-        public Identifier(string value)
+        public CIdentifierNode(string value)
         {
             Value = value;
         }

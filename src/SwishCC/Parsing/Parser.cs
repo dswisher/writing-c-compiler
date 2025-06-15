@@ -1,13 +1,13 @@
-using SwishCC.AST;
 using SwishCC.Lexing;
+using SwishCC.Models.CTree;
 
 namespace SwishCC.Parsing
 {
     public class Parser
     {
-        public TreeNode Parse(LexerResult tokens)
+        public CProgramNode Parse(LexerResult tokens)
         {
-            var programNode = new ProgramNode
+            var programNode = new CProgramNode
             {
                 FunctionDefinition = ParseFunction(tokens)
             };
@@ -16,16 +16,16 @@ namespace SwishCC.Parsing
         }
 
 
-        private FunctionNode ParseFunction(LexerResult tokens)
+        private CFunctionNode ParseFunction(LexerResult tokens)
         {
             // Parse the return type and function name
             tokens.ExpectAndPopKeyword("int");
 
             var identifierToken = tokens.ExpectAndPopToken(TokenType.Identifier);
 
-            var functionNode = new FunctionNode
+            var functionNode = new CFunctionNode
             {
-                Name = new Identifier(identifierToken.Value)
+                Name = new CIdentifierNode(identifierToken.Value)
             };
 
             // Parse the function parameters
@@ -49,11 +49,11 @@ namespace SwishCC.Parsing
         }
 
 
-        private ReturnNode ParseReturn(LexerResult tokens)
+        private CReturnNode ParseReturn(LexerResult tokens)
         {
             tokens.ExpectAndPopKeyword("return");
 
-            var returnNode = new ReturnNode
+            var returnNode = new CReturnNode
             {
                 Expression = ParseExpression(tokens)
             };
@@ -62,7 +62,7 @@ namespace SwishCC.Parsing
         }
 
 
-        private ExpressionNode ParseExpression(LexerResult tokens)
+        private CAbstractExpressionNode ParseExpression(LexerResult tokens)
         {
             // We should not be at the end
             if (tokens.CurrentToken == null)
@@ -75,7 +75,7 @@ namespace SwishCC.Parsing
             {
                 var constant = tokens.ExpectAndPopToken(TokenType.Constant);
 
-                return new ConstantExpressionNode
+                return new CConstantExpressionNode
                 {
                     Value = int.Parse(constant.Value)
                 };
@@ -99,7 +99,7 @@ namespace SwishCC.Parsing
                 var unaryOp = ParseUnaryOperator(tokens.PopToken());
                 var innerExpression = ParseExpression(tokens);
 
-                return new UnaryExpressionNode
+                return new CUnaryExpressionNode
                 {
                     Operator = unaryOp,
                     Operand = innerExpression
@@ -110,16 +110,16 @@ namespace SwishCC.Parsing
         }
 
 
-        private UnaryOperator ParseUnaryOperator(LexerToken token)
+        private CUnaryOperator ParseUnaryOperator(LexerToken token)
         {
             if (token.TokenType == TokenType.Hyphen)
             {
-                return UnaryOperator.Negation;
+                return CUnaryOperator.Negation;
             }
 
             if (token.TokenType == TokenType.Tilde)
             {
-                return UnaryOperator.Complement;
+                return CUnaryOperator.Complement;
             }
 
             throw new ParseException(token, $"Unexpected token {token.TokenType} ({token.Value}) when parsing unary operator.");

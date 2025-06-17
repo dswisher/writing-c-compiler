@@ -1,3 +1,6 @@
+// Copyright (c) Doug Swisher. All Rights Reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
 using System.IO;
 using FluentAssertions;
 using SwishCC.Lexing;
@@ -17,6 +20,7 @@ namespace SwishCC.UnitTests.Tackying
 
         [Theory]
         [InlineData("2", 1)]
+        [InlineData("-2", 1)]
         public void CanGenerateTackyExpression(string exp, int expectedInstructions)
         {
             // Arrange

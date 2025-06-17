@@ -1,3 +1,6 @@
+// Copyright (c) Doug Swisher. All Rights Reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -23,6 +26,14 @@ namespace SwishCC.Lexing
             charMap.Add(';', TokenType.Semicolon);
             charMap.Add('~', TokenType.Tilde);
         }
+
+
+        public LexerState CurrentState { get; set; }
+        public LexerReader LexerReader { get; }
+        public string CurrentBuffer => characterBuffer.ToString();
+        public int LineNumber { get; private set; }
+        public int ColumnNumber { get; private set; }
+        public LexerResult Result { get; }
 
 
         public void EmitToken(TokenType tokenType)
@@ -65,13 +76,5 @@ namespace SwishCC.Lexing
 
             EmitToken(tokenType);
         }
-
-
-        public LexerState CurrentState { get; set; }
-        public LexerReader LexerReader { get; }
-        public string CurrentBuffer => characterBuffer.ToString();
-        public int LineNumber { get; private set; }
-        public int ColumnNumber { get; private set; }
-        public LexerResult Result { get; }
     }
 }

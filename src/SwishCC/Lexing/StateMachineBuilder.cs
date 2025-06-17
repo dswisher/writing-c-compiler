@@ -1,3 +1,6 @@
+// Copyright (c) Doug Swisher. All Rights Reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
 using System.Collections.Generic;
 
 namespace SwishCC.Lexing
@@ -7,7 +10,7 @@ namespace SwishCC.Lexing
         private static readonly HashSet<string> Keywords = ["int", "void", "return"];
 
 
-        public static (LexerState, LexerState) BuildStateMachine()
+        public static (LexerState StartState, LexerState EndState) BuildStateMachine()
         {
             // - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             // Create all the states to make sure they exist, so we can link them together in any order.

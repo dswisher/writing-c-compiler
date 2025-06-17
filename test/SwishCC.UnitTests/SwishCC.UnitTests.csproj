@@ -4,9 +4,15 @@
         <ImplicitUsings>disable</ImplicitUsings>
         <Nullable>disable</Nullable>
         <IsPackable>false</IsPackable>
+        <CodeAnalysisRuleSet>../../src/stylecop.ruleset</CodeAnalysisRuleSet>
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+        </PackageReference>
+
         <PackageReference Include="coverlet.collector" Version="6.0.2" />
         <PackageReference Include="FluentAssertions" Version="7.2.0" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
@@ -16,5 +22,9 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\src\SwishCC\SwishCC.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <AdditionalFiles Include="../../src/stylecop.json" />
     </ItemGroup>
 </Project>

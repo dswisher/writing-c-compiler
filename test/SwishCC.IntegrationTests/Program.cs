@@ -17,6 +17,7 @@ namespace SwishCC.IntegrationTests
                 var parser = new Parser(with =>
                 {
                     with.CaseInsensitiveEnumValues = true;
+                    with.HelpWriter = Console.Error;
                 });
 
                 var parsed = parser.ParseArguments<Models.Options>(args);

@@ -21,5 +21,11 @@ namespace SwishCC.IntegrationTests.Models
 
         [Option('f', "stop-on-failure", HelpText = "Stop as soon as a test fails.")]
         public bool StopOnFailure { get; set; }
+
+        [Option("dump-ast", HelpText = "Save the AST to a file.")]
+        public bool DumpAst { get; set; }
+
+        [Option("dump-tacky", HelpText = "Save the TACKY to a file.")]
+        public bool DumpTacky { get; set; }
     }
 }

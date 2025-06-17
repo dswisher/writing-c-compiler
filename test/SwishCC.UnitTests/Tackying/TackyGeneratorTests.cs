@@ -20,7 +20,10 @@ namespace SwishCC.UnitTests.Tackying
 
         [Theory]
         [InlineData("2", 1)]
-        [InlineData("-2", 1)]
+        [InlineData("-2", 2)]
+        [InlineData("~2", 2)]
+        [InlineData("~(2)", 2)]
+        [InlineData("~(-2)", 3)]
         public void CanGenerateTackyExpression(string exp, int expectedInstructions)
         {
             // Arrange

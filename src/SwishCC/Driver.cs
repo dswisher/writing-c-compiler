@@ -229,7 +229,25 @@ namespace SwishCC
 
         private static void Cleanup(Context context)
         {
-            // Keep the files, if requested
+            // If we're not dumping the AST, clean it up
+            if (!context.Options.DumpAst)
+            {
+                if (File.Exists(context.AstFilePath))
+                {
+                    File.Delete(context.AstFilePath);
+                }
+            }
+
+            // If we're not dumping TACKY, clean it up
+            if (!context.Options.DumpTacky)
+            {
+                if (File.Exists(context.TackyFilePath))
+                {
+                    File.Delete(context.TackyFilePath);
+                }
+            }
+
+            // Keep the remaining files, if requested
             if (context.Options.KeepIntermediateFiles)
             {
                 return;
@@ -239,16 +257,6 @@ namespace SwishCC
             if (File.Exists(context.PreprocessedFilePath))
             {
                 File.Delete(context.PreprocessedFilePath);
-            }
-
-            if (File.Exists(context.AstFilePath))
-            {
-                File.Delete(context.AstFilePath);
-            }
-
-            if (File.Exists(context.TackyFilePath))
-            {
-                File.Delete(context.TackyFilePath);
             }
 
             if (File.Exists(context.AssemblyFilePath))

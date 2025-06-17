@@ -100,7 +100,9 @@ namespace SwishCC.IntegrationTests
                     TackyOnly = options.Stage == Stage.Tacky,
                     CodeGenOnly = options.Stage == Stage.CodeGen,
                     FilePath = testFile.FullPath,
-                    Quiet = true
+                    Quiet = true,
+                    DumpAst = options.DumpAst,
+                    DumpTacky = options.DumpTacky
                 };
 
                 return driver.Run(driverOptions);

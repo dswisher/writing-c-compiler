@@ -1,6 +1,7 @@
 // Copyright (c) Doug Swisher. All Rights Reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using System.Collections.Generic;
 using SwishCC.Models.CTree;
 using SwishCC.Models.TackyTree;
 
@@ -8,6 +9,9 @@ namespace SwishCC.Tackying
 {
     public class TackyGenerator
     {
+        private int nextTemporaryIndex;
+
+
         public TackyProgramNode EmitTacky(CProgramNode cProgram)
         {
             return new TackyProgramNode
@@ -32,23 +36,53 @@ namespace SwishCC.Tackying
 
         private void EmitTacky(TackyFunctionNode tackyFunction, CReturnNode cReturn)
         {
-            // TODO - need to handle general expressions, for now, just handle constants
-            if (cReturn.Expression is CConstantExpressionNode cc)
+            var op = EmitTacky(cReturn.Expression, tackyFunction.Instructions);
+
+            var tackyReturn = new TackyReturnInstructionNode
             {
-                var tackyReturn = new TackyReturnInstructionNode
+                Value = op
+            };
+
+            tackyFunction.Instructions.Add(tackyReturn);
+        }
+
+
+        private TackyAbstractValueNode EmitTacky(CAbstractExpressionNode exp, List<TackyAbstractInstructionNode> instructions)
+        {
+            // TODO - need to handle general expressions, for now, just handle constants
+            if (exp is CConstantExpressionNode cce)
+            {
+                return new TackyConstantValueNode
                 {
-                    Value = new TackyConstantValueNode
-                    {
-                        Value = cc.Value
-                    }
+                    Value = cce.Value
+                };
+            }
+
+            if (exp is CUnaryExpressionNode cue)
+            {
+                var src = EmitTacky(cue.Operand, instructions);
+                var dst = new TackyVariableValueNode(MakeTemporary());
+                var op = cue.Operator.ToTacky();
+
+                var unary = new TackyUnaryInstructionNode
+                {
+                    Operator = op,
+                    Source = src,
+                    Destination = dst
                 };
 
-                tackyFunction.Instructions.Add(tackyReturn);
+                instructions.Add(unary);
+
+                return dst;
             }
-            else
-            {
-                throw new TackyException($"Emitting tacky for {cReturn.Expression.GetType().Name} is not yet implemented");
-            }
+
+            throw new TackyException($"Emitting tacky for {exp.GetType().Name} is not yet implemented");
+        }
+
+
+        private string MakeTemporary()
+        {
+            return $"tmp.{++nextTemporaryIndex}";
         }
     }
 }

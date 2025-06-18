@@ -2,12 +2,12 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System.IO;
-using SwishCC.Misc;
+using SwishCC.Exceptions;
 using SwishCC.Models.TackyTree;
 
 namespace SwishCC.Tackying
 {
-    public class TackyWriter
+    public class TackyTreeWriter
     {
         public void Write(TackyProgramNode program, string path)
         {

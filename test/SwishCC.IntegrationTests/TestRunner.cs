@@ -3,11 +3,10 @@
 
 using System;
 using System.Diagnostics;
+using SwishCC.Exceptions;
 using SwishCC.IntegrationTests.Models;
-using SwishCC.Lexing;
-using SwishCC.Parsing;
-using SwishCC.Tackying;
 using DriverOps = SwishCC.Options;
+using TestOps = SwishCC.IntegrationTests.Models.Options;
 
 namespace SwishCC.IntegrationTests
 {
@@ -16,7 +15,7 @@ namespace SwishCC.IntegrationTests
         private readonly TestSeeker testSeeker = new();
 
 
-        public int Run(Models.Options options)
+        public int Run(TestOps options)
         {
             // Time it
             var timer = Stopwatch.StartNew();
@@ -88,7 +87,7 @@ namespace SwishCC.IntegrationTests
         }
 
 
-        private static int RunOneTest(Models.Options options, TestFile testFile)
+        private static int RunOneTest(TestOps options, TestFile testFile)
         {
             try
             {
@@ -100,14 +99,15 @@ namespace SwishCC.IntegrationTests
                     TackyOnly = options.Stage == Stage.Tacky,
                     CodeGenOnly = options.Stage == Stage.CodeGen,
                     FilePath = testFile.FullPath,
-                    Quiet = true,
-                    DumpAst = options.DumpAst,
-                    DumpTacky = options.DumpTacky
+                    Quiet = !options.Verbose,
+                    DumpCTree = options.DumpCTree,
+                    DumpTacky = options.DumpTacky,
+                    DumpAssemblyTree = options.DumpAssemblyTree,
                 };
 
                 return driver.Run(driverOptions);
             }
-            catch (LexException)
+            catch (LexerException)
             {
                 return 1;
             }
@@ -115,7 +115,7 @@ namespace SwishCC.IntegrationTests
             {
                 return 2;
             }
-            catch (TackyException)
+            catch (CompilerException)
             {
                 return 3;
             }

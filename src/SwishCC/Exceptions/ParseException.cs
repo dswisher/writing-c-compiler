@@ -4,7 +4,7 @@
 using System;
 using SwishCC.Lexing;
 
-namespace SwishCC.Parsing
+namespace SwishCC.Exceptions
 {
     public class ParseException : Exception
     {

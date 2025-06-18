@@ -1,11 +1,11 @@
 // Copyright (c) Doug Swisher. All Rights Reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-namespace SwishCC.Models.TackyTree
+namespace SwishCC.Models.Common
 {
-    public class TackyIdentifierNode
+    public class IdentifierNode
     {
-        public TackyIdentifierNode(string value)
+        public IdentifierNode(string value)
         {
             Value = value;
         }

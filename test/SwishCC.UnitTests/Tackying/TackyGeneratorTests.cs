@@ -41,7 +41,7 @@ namespace SwishCC.UnitTests.Tackying
             var ast = parser.Parse(tokens);
 
             // Act
-            var tackyProgram = tackyGenerator.EmitTacky(ast);
+            var tackyProgram = tackyGenerator.ConvertCTree(ast);
 
             // Assert
             tackyProgram.Should().NotBeNull();

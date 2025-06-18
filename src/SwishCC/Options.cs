@@ -31,10 +31,13 @@ namespace SwishCC
         [Option("keep", HelpText = "Keep the intermediate files generated during compilation (for debugging).")]
         public bool KeepIntermediateFiles { get; set; }
 
-        [Option("dump-ast", HelpText = "Save the AST to a file.")]
-        public bool DumpAst { get; set; }
+        [Option("dump-c-tree", HelpText = "Save the C AST to a file.")]
+        public bool DumpCTree { get; set; }
 
         [Option("dump-tacky", HelpText = "Save the TACKY to a file.")]
         public bool DumpTacky { get; set; }
+
+        [Option("dump-assembly-tree", HelpText = "Save the Assembly AST to a file.")]
+        public bool DumpAssemblyTree { get; set; }
     }
 }

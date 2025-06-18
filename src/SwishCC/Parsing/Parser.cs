@@ -1,7 +1,9 @@
 // Copyright (c) Doug Swisher. All Rights Reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using SwishCC.Exceptions;
 using SwishCC.Lexing;
+using SwishCC.Models.Common;
 using SwishCC.Models.CTree;
 
 namespace SwishCC.Parsing
@@ -28,7 +30,7 @@ namespace SwishCC.Parsing
 
             var functionNode = new CFunctionNode
             {
-                Name = new CIdentifierNode(identifierToken.Value)
+                Name = new IdentifierNode(identifierToken.Value)
             };
 
             // Parse the function parameters

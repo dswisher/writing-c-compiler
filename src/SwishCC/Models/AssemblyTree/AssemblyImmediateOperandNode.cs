@@ -1,16 +1,16 @@
 // Copyright (c) Doug Swisher. All Rights Reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-namespace SwishCC.Models.CTree
+namespace SwishCC.Models.AssemblyTree
 {
-    public class CIdentifierNode
+    public class AssemblyImmediateOperandNode : AssemblyAbstractOperandNode
     {
-        public CIdentifierNode(string value)
+        public AssemblyImmediateOperandNode(int value)
         {
             Value = value;
         }
 
 
-        public string Value { get; private set; }
+        public int Value { get; }
     }
 }

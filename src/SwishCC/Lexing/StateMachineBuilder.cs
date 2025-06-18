@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System.Collections.Generic;
+using SwishCC.Exceptions;
 
 namespace SwishCC.Lexing
 {
@@ -61,7 +62,7 @@ namespace SwishCC.Lexing
                 })
                 .AddTransition("a-zA-Z_", (_, ctx) =>
                 {
-                    throw new LexException($"Invalid identifier at line {ctx.LineNumber}, column {ctx.ColumnNumber}.");
+                    throw new LexerException($"Invalid identifier at line {ctx.LineNumber}, column {ctx.ColumnNumber}.");
                 })
                 .Otherwise((_, ctx) =>
                 {

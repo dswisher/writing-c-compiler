@@ -4,11 +4,11 @@
 using System.Collections.Generic;
 using SwishCC.Models.Common;
 
-namespace SwishCC.Models.TackyTree
+namespace SwishCC.Models.AssemblyTree
 {
-    public class TackyFunctionNode
+    public class AssemblyFunctionNode
     {
         public IdentifierNode Name { get; set; }
-        public List<TackyAbstractInstructionNode> Instructions { get; } = [];
+        public List<AssemblyAbstractInstructionNode> Instructions { get; } = [];
     }
 }

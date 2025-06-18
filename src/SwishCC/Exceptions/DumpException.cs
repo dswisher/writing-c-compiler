@@ -3,11 +3,11 @@
 
 using System;
 
-namespace SwishCC.Lexing
+namespace SwishCC.Exceptions
 {
-    public class LexException : Exception
+    public class DumpException : Exception
     {
-        public LexException(string message)
+        public DumpException(string message)
             : base(message)
         {
         }

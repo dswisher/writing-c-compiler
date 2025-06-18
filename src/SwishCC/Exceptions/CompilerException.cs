@@ -3,11 +3,11 @@
 
 using System;
 
-namespace SwishCC.Tackying
+namespace SwishCC.Exceptions
 {
-    public class TackyException : Exception
+    public class CompilerException : Exception
     {
-        public TackyException(string message)
+        public CompilerException(string message)
             : base(message)
         {
         }

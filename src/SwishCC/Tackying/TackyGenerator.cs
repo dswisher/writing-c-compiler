@@ -2,6 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System.Collections.Generic;
+using SwishCC.Exceptions;
+using SwishCC.Models.Common;
 using SwishCC.Models.CTree;
 using SwishCC.Models.TackyTree;
 
@@ -12,31 +14,31 @@ namespace SwishCC.Tackying
         private int nextTemporaryIndex;
 
 
-        public TackyProgramNode EmitTacky(CProgramNode cProgram)
+        public TackyProgramNode ConvertCTree(CProgramNode cProgram)
         {
             return new TackyProgramNode
             {
-                FunctionDefinition = EmitTacky(cProgram.FunctionDefinition)
+                FunctionDefinition = ConvertCTree(cProgram.FunctionDefinition)
             };
         }
 
 
-        private TackyFunctionNode EmitTacky(CFunctionNode cFunction)
+        private TackyFunctionNode ConvertCTree(CFunctionNode cFunction)
         {
             var tackyFunction = new TackyFunctionNode
             {
-                Name = new TackyIdentifierNode(cFunction.Name.Value)
+                Name = new IdentifierNode(cFunction.Name.Value)
             };
 
-            EmitTacky(tackyFunction, cFunction.Body);
+            ConvertCTree(tackyFunction, cFunction.Body);
 
             return tackyFunction;
         }
 
 
-        private void EmitTacky(TackyFunctionNode tackyFunction, CReturnNode cReturn)
+        private void ConvertCTree(TackyFunctionNode tackyFunction, CReturnNode cReturn)
         {
-            var op = EmitTacky(cReturn.Expression, tackyFunction.Instructions);
+            var op = ConvertCTree(cReturn.Expression, tackyFunction.Instructions);
 
             var tackyReturn = new TackyReturnInstructionNode
             {
@@ -47,7 +49,7 @@ namespace SwishCC.Tackying
         }
 
 
-        private TackyAbstractValueNode EmitTacky(CAbstractExpressionNode exp, List<TackyAbstractInstructionNode> instructions)
+        private TackyAbstractValueNode ConvertCTree(CAbstractExpressionNode exp, List<TackyAbstractInstructionNode> instructions)
         {
             // TODO - need to handle general expressions, for now, just handle constants
             if (exp is CConstantExpressionNode cce)
@@ -60,7 +62,7 @@ namespace SwishCC.Tackying
 
             if (exp is CUnaryExpressionNode cue)
             {
-                var src = EmitTacky(cue.Operand, instructions);
+                var src = ConvertCTree(cue.Operand, instructions);
                 var dst = new TackyVariableValueNode(MakeTemporary());
                 var op = cue.Operator.ToTacky();
 
@@ -76,7 +78,7 @@ namespace SwishCC.Tackying
                 return dst;
             }
 
-            throw new TackyException($"Emitting tacky for {exp.GetType().Name} is not yet implemented");
+            throw new CompilerException($"Emitting tacky for {exp.GetType().Name} is not yet implemented");
         }
 
 

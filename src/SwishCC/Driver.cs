@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using SwishCC.AssemblyGen;
 using SwishCC.Lexing;
 using SwishCC.Models.CTree;
 using SwishCC.Parsing;
@@ -62,11 +63,11 @@ namespace SwishCC
                 var parser = new Parser();
                 var ast = parser.Parse(tokens);
 
-                if (options.DumpAst)
+                if (options.DumpCTree)
                 {
-                    var astWriter = new AstWriter();
+                    var cTreeWriter = new CTreeWriter();
 
-                    astWriter.Write(ast, context.AstFilePath);
+                    cTreeWriter.Write(ast, context.CTreeFilePath);
                 }
 
                 if (options.ParseOnly)
@@ -75,12 +76,17 @@ namespace SwishCC
                 }
 
                 // Convert the AST to TACKY
+                if (!options.Quiet)
+                {
+                    Console.WriteLine("Converting C AST to TACKY...");
+                }
+
                 var tackyGenerator = new TackyGenerator();
-                var tacky = tackyGenerator.EmitTacky(ast);
+                var tacky = tackyGenerator.ConvertCTree(ast);
 
                 if (options.DumpTacky)
                 {
-                    var tackyWriter = new TackyWriter();
+                    var tackyWriter = new TackyTreeWriter();
 
                     tackyWriter.Write(tacky, context.TackyFilePath);
                 }
@@ -90,16 +96,29 @@ namespace SwishCC
                     return 0;
                 }
 
-                // Convert the AST to an assembly (.s) file
-                if (!CreateAssemblyFile(context, ast))
+                // Convert the TACKY to an Assembly AST
+                if (!options.Quiet)
                 {
-                    return 2;
+                    Console.WriteLine("Converting TACKY to Assembly AST...");
                 }
+
+                var assemblyGenerator = new AssemblyGenerator();
+                var assemblyAst = assemblyGenerator.ConvertTacky(tacky);
+
+                if (options.DumpAssemblyTree)
+                {
+                    var assemblyTreeWriter = new AssemblyTreeWriter();
+
+                    assemblyTreeWriter.Write(assemblyAst, context.AssemblyTreeFilePath);
+                }
+
+                // Emit the assembly
+                // TODO - emit the assembly
 
                 // Assemble and link
                 if (!AssembleAndLink(context))
                 {
-                    return 3;
+                    return 4;
                 }
 
                 // No errors!
@@ -123,8 +142,9 @@ namespace SwishCC
                 Options = options,
                 InputFilePath = options.FilePath,
                 PreprocessedFilePath = Path.Join(path, $"{baseFileName}.i"),
-                AstFilePath = Path.Join(path, $"{baseFileName}.ast"),
+                CTreeFilePath = Path.Join(path, $"{baseFileName}.c.tree"),
                 TackyFilePath = Path.Join(path, $"{baseFileName}.tacky"),
+                AssemblyTreeFilePath = Path.Join(path, $"{baseFileName}.a.tree"),
                 AssemblyFilePath = Path.Join(path, $"{baseFileName}.s"),
                 ExecutableFilePath = Path.Join(path, baseFileName)
             };
@@ -162,42 +182,6 @@ namespace SwishCC
         }
 
 
-        private static bool CreateAssemblyFile(Context context, CProgramNode ast)
-        {
-            if (!context.Options.Quiet)
-            {
-                Console.WriteLine($"Creating assembly file {context.AssemblyFilePath}");
-            }
-
-#if false
-            if (ast is ProgramNode pn)
-            {
-                var val = pn.FunctionDefinition.Body.Expression.Value;
-
-                // TODO - this is a hack, until TACKY
-                using (var writer = new StreamWriter(context.AssemblyFilePath))
-                {
-                    // NOTE: On MAC, need "_main" instead of "main"
-
-                    // writer.WriteLine(".section .text");
-                    writer.WriteLine("    .globl _main");
-                    writer.WriteLine("_main:");
-                    writer.WriteLine($"    movl ${val}, %eax");
-                    writer.WriteLine("    ret");
-                }
-
-                return true;
-            }
-
-            Console.WriteLine("Error: AST is not a ProgramNode.");
-#endif
-
-            Console.WriteLine("Error: CreateAssemblyFile not implemented yet.");
-
-            return false;
-        }
-
-
         private static bool AssembleAndLink(Context context)
         {
             if (!context.Options.Quiet)
@@ -219,22 +203,27 @@ namespace SwishCC
             var output = process.StandardOutput.ReadToEnd();
             var error = process.StandardError.ReadToEnd();
 
-            // TODO - do something with the output and error
+            if (process.ExitCode != 0)
+            {
+                Console.WriteLine(output);
+                Console.WriteLine(error);
+
+                return false;
+            }
 
             // No errors!
-            // TODO - actually check for errors
             return true;
         }
 
 
         private static void Cleanup(Context context)
         {
-            // If we're not dumping the AST, clean it up
-            if (!context.Options.DumpAst)
+            // If we're not dumping the C AST, clean it up
+            if (!context.Options.DumpCTree)
             {
-                if (File.Exists(context.AstFilePath))
+                if (File.Exists(context.CTreeFilePath))
                 {
-                    File.Delete(context.AstFilePath);
+                    File.Delete(context.CTreeFilePath);
                 }
             }
 
@@ -244,6 +233,15 @@ namespace SwishCC
                 if (File.Exists(context.TackyFilePath))
                 {
                     File.Delete(context.TackyFilePath);
+                }
+            }
+
+            // If we're not dumping the Assembly AST, clean it up
+            if (!context.Options.DumpAssemblyTree)
+            {
+                if (File.Exists(context.AssemblyTreeFilePath))
+                {
+                    File.Delete(context.AssemblyTreeFilePath);
                 }
             }
 
@@ -272,8 +270,9 @@ namespace SwishCC
 
             public string InputFilePath { get; set; }
             public string PreprocessedFilePath { get; set; }
-            public string AstFilePath { get; set; }
+            public string CTreeFilePath { get; set; }
             public string TackyFilePath { get; set; }
+            public string AssemblyTreeFilePath { get; set; }
             public string AssemblyFilePath { get; set; }
             public string ExecutableFilePath { get; set; }
         }

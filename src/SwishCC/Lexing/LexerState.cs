@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using SwishCC.Exceptions;
 
 namespace SwishCC.Lexing
 {
@@ -25,7 +26,7 @@ namespace SwishCC.Lexing
         {
             if (!transitions.TryAdd(ch, action))
             {
-                throw new LexException($"Transition for character '{ch}' already exists in state {Name}");
+                throw new LexerException($"Transition for character '{ch}' already exists in state {Name}");
             }
 
             return this;
@@ -38,7 +39,7 @@ namespace SwishCC.Lexing
             {
                 if (!transitions.TryAdd(ch, action))
                 {
-                    throw new LexException($"Transition for character '{ch}' already exists in state {Name}");
+                    throw new LexerException($"Transition for character '{ch}' already exists in state {Name}");
                 }
             }
 
@@ -50,7 +51,7 @@ namespace SwishCC.Lexing
         {
             if (defaultAction != null)
             {
-                throw new LexException($"Default action already set for state {Name}");
+                throw new LexerException($"Default action already set for state {Name}");
             }
 
             defaultAction = action;
@@ -76,7 +77,7 @@ namespace SwishCC.Lexing
             }
             else
             {
-                throw new LexException($"Unexpected character '{(char)ch}' (0x{ch:X2}) in state {Name}");
+                throw new LexerException($"Unexpected character '{(char)ch}' (0x{ch:X2}) in state {Name}");
             }
         }
     }

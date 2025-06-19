@@ -9,6 +9,6 @@ namespace SwishCC.Models.AssemblyTree
     public class AssemblyFunctionNode
     {
         public IdentifierNode Name { get; set; }
-        public List<AssemblyAbstractInstructionNode> Instructions { get; } = [];
+        public List<AssemblyAbstractInstructionNode> Instructions { get; set; }
     }
 }

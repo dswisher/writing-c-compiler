@@ -4,8 +4,10 @@ DRIVER_PATH=$(HOME)/git/dswisher/writing-c-compiler/scripts/swish-cc.sh
 
 
 .PHONY: main lex1 parse1 codegen1 chapter1 lex2 parse2 tacky2
+.PHONY: lex1 parse1 codegen1 chapter1
+.PHONY: lex2 parse2 codegen2 chapter2
 
-main: chapter1
+main: chapter2
 
 
 bars:
@@ -44,4 +46,8 @@ parse2: bars
 tacky2: bars
 	cd $(TEST_PATH) && \
 	./test_compiler $(DRIVER_PATH) --chapter 2 --stage tacky
+
+chapter2: bars
+	cd $(TEST_PATH) && \
+	./test_compiler $(DRIVER_PATH) --chapter 2
 

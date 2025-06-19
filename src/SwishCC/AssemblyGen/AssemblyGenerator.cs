@@ -15,27 +15,28 @@ namespace SwishCC.AssemblyGen
         public AssemblyProgramNode ConvertTacky(TackyProgramNode tackyProgram)
         {
             // Convert TACKY to the assembly AST
+            var instructions = new List<AssemblyAbstractInstructionNode>();
+
             var assembly = new AssemblyProgramNode
             {
-                FunctionDefinition = ConvertTacky(tackyProgram.FunctionDefinition)
+                FunctionDefinition = ConvertTacky(tackyProgram.FunctionDefinition, instructions)
             };
 
             // Replace pseudo register operands with stack operands
-            // TODO - xyzzy - replace pseudo registers
-            var stackSize = 0;
-
-            // Add the allocate stack instruction to the start
-            assembly.FunctionDefinition.Instructions.Insert(0, new AssemblyAllocateStackInstructionNode(stackSize));
+            (instructions, var stackSize) = ReplacePseudoRegisters(instructions);
 
             // Rewrite any invalid Mov instructions
-            // TODO - xyzzy - rewrite mov instructions
+            instructions = AddStackAndReplaceInvalidMovInstructions(instructions, stackSize);
+
+            // Save the list of instructions we have created
+            assembly.FunctionDefinition.Instructions = instructions;
 
             // Return the result
             return assembly;
         }
 
 
-        private static AssemblyFunctionNode ConvertTacky(TackyFunctionNode tackyFunction)
+        private static AssemblyFunctionNode ConvertTacky(TackyFunctionNode tackyFunction, List<AssemblyAbstractInstructionNode> instructions)
         {
             var node = new AssemblyFunctionNode
             {
@@ -44,7 +45,7 @@ namespace SwishCC.AssemblyGen
 
             foreach (var instruction in tackyFunction.Instructions)
             {
-                ConvertTacky(instruction, node.Instructions);
+                ConvertTacky(instruction, instructions);
             }
 
             return node;
@@ -111,6 +112,97 @@ namespace SwishCC.AssemblyGen
                 default:
                     throw new CompilerException($"Don't know how to convert tacky unary operator {tacky}");
             }
+        }
+
+
+        private static (List<AssemblyAbstractInstructionNode> Instructions, int StackSize) ReplacePseudoRegisters(List<AssemblyAbstractInstructionNode> inputList)
+        {
+            // Create the result list and the map of pseudo registers to stack offsets
+            var outputList = new List<AssemblyAbstractInstructionNode>();
+            var pseudoMap = new Dictionary<string, int>();
+
+            // Go through all the input instructions and replace pseudo registers
+            foreach (var inputInstruction in inputList)
+            {
+                if (inputInstruction is AssemblyMoveInstructionNode mov)
+                {
+                    var src = ReplaceOperand(pseudoMap, mov.Source);
+                    var dst = ReplaceOperand(pseudoMap, mov.Destination);
+
+                    outputList.Add(new AssemblyMoveInstructionNode(src, dst));
+                }
+                else if (inputInstruction is AssemblyUnaryInstructionNode unary)
+                {
+                    var operand = ReplaceOperand(pseudoMap, unary.Operand);
+
+                    outputList.Add(new AssemblyUnaryInstructionNode(unary.UnaryOperator, operand));
+                }
+                else if (inputInstruction is AssemblyReturnInstructionNode)
+                {
+                    outputList.Add(inputInstruction);
+                }
+                else
+                {
+                    throw new CompilerException($"Don't know how to fix up pseudo registers for instruction of type {inputInstruction.GetType().Name}");
+                }
+            }
+
+            // Return the result
+            return (outputList, pseudoMap.Count * 4);
+        }
+
+        private static AssemblyAbstractOperandNode ReplaceOperand(Dictionary<string, int> pseudoMap, AssemblyAbstractOperandNode input)
+        {
+            if (input is AssemblyPseudoOperandNode pseudo)
+            {
+                if (!pseudoMap.TryGetValue(pseudo.Name, out var offset))
+                {
+                    offset = (pseudoMap.Count + 1) * -4;
+
+                    pseudoMap.Add(pseudo.Name, offset);
+                }
+
+                return new AssemblyStackOperandNode(offset);
+            }
+
+            // For everything else, just return it
+            return input;
+        }
+
+
+        private static List<AssemblyAbstractInstructionNode> AddStackAndReplaceInvalidMovInstructions(List<AssemblyAbstractInstructionNode> inputList, int stackSize)
+        {
+            // Create the result list
+            var outputList = new List<AssemblyAbstractInstructionNode>();
+
+            // Add the allocate stack instruction to start
+            outputList.Add(new AssemblyAllocateStackInstructionNode(stackSize));
+
+            // Go through all the input instructions, looking for invalid mov instructions
+            foreach (var inputInstruction in inputList)
+            {
+                if (inputInstruction is AssemblyMoveInstructionNode move)
+                {
+                    if (move.Source is AssemblyStackOperandNode src && move.Destination is AssemblyStackOperandNode dst)
+                    {
+                        var temp = new AssemblyRegisterOperandNode(AssemblyRegister.R10);
+
+                        outputList.Add(new AssemblyMoveInstructionNode(src, temp));
+                        outputList.Add(new AssemblyMoveInstructionNode(temp, dst));
+                    }
+                    else
+                    {
+                        outputList.Add(inputInstruction);
+                    }
+                }
+                else
+                {
+                    outputList.Add(inputInstruction);
+                }
+            }
+
+            // Return the result
+            return outputList;
         }
     }
 }

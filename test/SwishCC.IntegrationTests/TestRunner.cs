@@ -66,7 +66,7 @@ namespace SwishCC.IntegrationTests
                     }
                     else
                     {
-                        if (options.Stage == Stage.CompileAndRun)
+                        if (options.Stage == Stage.CompileAndRun && !options.EmitAssembly)
                         {
                             // Run the executable and verify the proper exit code
                             if (options.Verbose)

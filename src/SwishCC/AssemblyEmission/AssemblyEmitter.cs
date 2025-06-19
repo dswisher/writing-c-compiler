@@ -47,12 +47,16 @@ namespace SwishCC.AssemblyEmission
                     writer.WriteLine($"    subq ${stack.StackSize}, %rsp");
                     break;
 
-                case AssemblyMoveInstructionNode moveInstruction:
-                    writer.WriteLine($"    mov {Decode(moveInstruction.Source)}, {Decode(moveInstruction.Destination)}");
+                case AssemblyMoveInstructionNode move:
+                    writer.WriteLine($"    movl {Decode(move.Source)}, {Decode(move.Destination)}");
+                    break;
+
+                case AssemblyUnaryInstructionNode unary:
+                    writer.WriteLine($"    {Decode(unary.UnaryOperator)} {Decode(unary.Operand)}");
                     break;
 
                 default:
-                    throw new CompilerException($"Do not yet know how to emit assembly: {assemblyInstruction.GetType()}");
+                    throw new CompilerException($"Do not yet know how to emit assembly: {assemblyInstruction.GetType().Name}");
             }
         }
 
@@ -79,7 +83,28 @@ namespace SwishCC.AssemblyEmission
                 }
             }
 
+            if (value is AssemblyStackOperandNode stack)
+            {
+                return $"{stack.Offset}(%rbp)";
+            }
+
             throw new CompilerException($"Don't know how to decode value: {value.GetType().Name}");
+        }
+
+
+        private static string Decode(AssemblyUnaryOperator op)
+        {
+            switch (op)
+            {
+                case AssemblyUnaryOperator.Neg:
+                    return "negl";
+
+                case AssemblyUnaryOperator.Not:
+                    return "notl";
+
+                default:
+                    throw new CompilerException($"Don't know how to decode unary operator: {op}");
+            }
         }
     }
 }

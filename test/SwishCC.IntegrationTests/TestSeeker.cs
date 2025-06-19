@@ -11,8 +11,15 @@ namespace SwishCC.IntegrationTests
 {
     public class TestSeeker
     {
-        public List<TestFile> FindTests(Models.Options options)
+        public List<TestFile> FindTests(TestRunnerOptions options)
         {
+            // Load the list of expected results
+            var expectedResults = LoadExpectedResults(options);
+            if (expectedResults == null)
+            {
+                return null;
+            }
+
             // Get the list of chapters
             var chapters = GetChapters(options);
 
@@ -22,7 +29,7 @@ namespace SwishCC.IntegrationTests
             {
                 Console.WriteLine($"Scanning for tests in chapter {chapter}...");
 
-                testFiles.AddRange(FindTestFiles(options, chapter));
+                testFiles.AddRange(FindTestFiles(options, chapter, expectedResults));
             }
 
             // Return what we found
@@ -30,7 +37,27 @@ namespace SwishCC.IntegrationTests
         }
 
 
-        private static List<int> GetChapters(Models.Options options)
+        private static Dictionary<string, ExpectedResultItem> LoadExpectedResults(TestRunnerOptions options)
+        {
+            var path = Path.Join(options.TestRoot, "expected_results.json");
+
+            if (!File.Exists(path))
+            {
+                Console.WriteLine($"Expected results file not found: {path}");
+                return null;
+            }
+
+            var json = File.ReadAllText(path);
+
+            var expectedResults = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, ExpectedResultItem>>(json);
+
+            Console.WriteLine($"Loaded {expectedResults.Count} expected results.");
+
+            return expectedResults;
+        }
+
+
+        private static List<int> GetChapters(TestRunnerOptions options)
         {
             var chapters = new List<int>();
 
@@ -47,7 +74,7 @@ namespace SwishCC.IntegrationTests
         }
 
 
-        private static List<TestFile> FindTestFiles(Models.Options options, int chapter)
+        private static List<TestFile> FindTestFiles(TestRunnerOptions options, int chapter, Dictionary<string, ExpectedResultItem> expectedResults)
         {
             var result = new List<TestFile>();
             var chapterSubDir = $"chapter_{chapter}";
@@ -56,24 +83,27 @@ namespace SwishCC.IntegrationTests
             foreach (var dir in validDirs)
             {
                 var dirSubPath = Path.Combine(chapterSubDir, dir);
-                var fullDirPath = Path.Combine(options.TestRoot, dirSubPath);
+                var fullDirPath = Path.Combine(options.TestRoot, "tests", dirSubPath);
 
-                result.AddRange(ScanForFiles(fullDirPath, dirSubPath, true));
+                result.AddRange(ScanForFiles(fullDirPath, dirSubPath, expectedResults, true));
             }
 
-            foreach (var dir in invalidDirs)
+            if (!options.SkipInvalid)
             {
-                var dirSubPath = Path.Combine(chapterSubDir, dir);
-                var fullDirPath = Path.Combine(options.TestRoot, dirSubPath);
+                foreach (var dir in invalidDirs)
+                {
+                    var dirSubPath = Path.Combine(chapterSubDir, dir);
+                    var fullDirPath = Path.Combine(options.TestRoot, "tests", dirSubPath);
 
-                result.AddRange(ScanForFiles(fullDirPath, dirSubPath, false));
+                    result.AddRange(ScanForFiles(fullDirPath, dirSubPath, expectedResults, false));
+                }
             }
 
             return result;
         }
 
 
-        private static IEnumerable<TestFile> ScanForFiles(string fullDirPath, string dirSubPath, bool isValid)
+        private static IEnumerable<TestFile> ScanForFiles(string fullDirPath, string dirSubPath, Dictionary<string, ExpectedResultItem> expectedResults, bool isValid)
         {
             if (!Directory.Exists(fullDirPath))
             {
@@ -82,17 +112,23 @@ namespace SwishCC.IntegrationTests
 
             foreach (var filePath in Directory.EnumerateFiles(fullDirPath, "*.c"))
             {
+                var subPath = Path.Join(dirSubPath, Path.GetFileName(filePath));
+                var resultItem = expectedResults.GetValueOrDefault(subPath);
+
                 yield return new TestFile
                 {
                     FullPath = filePath,
-                    SubPath = Path.Join(dirSubPath, Path.GetFileName(filePath)),
-                    IsValid = isValid
+                    SubPath = subPath,
+                    FullExecutablePath = Path.Join(Path.GetDirectoryName(filePath), Path.GetFileNameWithoutExtension(filePath)),
+                    IsValid = isValid,
+                    ExpectedExitCode = resultItem?.ReturnCode ?? 0,
+                    ExpectedStandardOutput = resultItem?.StandardOutput
                 };
             }
         }
 
 
-        private static (List<string> ValidDirs, List<string> InvalidDirs) GetDirs(Models.Options options)
+        private static (List<string> ValidDirs, List<string> InvalidDirs) GetDirs(TestRunnerOptions options)
         {
             const string invalidLex = "invalid_lex";
             const string invalidParse = "invalid_parse";

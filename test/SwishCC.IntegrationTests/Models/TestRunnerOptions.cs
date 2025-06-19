@@ -5,12 +5,12 @@ using CommandLine;
 
 namespace SwishCC.IntegrationTests.Models
 {
-    public class Options
+    public class TestRunnerOptions
     {
-        [Option("test-root", Default = "/Users/swisherd/git/other/writing-a-c-compiler-tests/tests", HelpText = "The root directory where the test files are located.")]
+        [Option("test-root", Default = "/Users/swisherd/git/other/writing-a-c-compiler-tests", HelpText = "The root directory where the test files are located.")]
         public string TestRoot { get; set; }
 
-        [Option("stage", HelpText = "The stage of the compiler to test.")]
+        [Option("stage", Default = Stage.CompileAndRun, HelpText = "The stage of the compiler to test.")]
         public Stage Stage { get; set; }
 
         [Option("chapter", Required = true, HelpText = "Specify the chapter whose tests should be run.")]
@@ -33,5 +33,14 @@ namespace SwishCC.IntegrationTests.Models
 
         [Option("verbose", HelpText = "Print verbose log messages.")]
         public bool Verbose { get; set; }
+
+        [Option("skip-invalid", HelpText = "Skip invalid tests.")]
+        public bool SkipInvalid { get; set; }
+
+        [Option('S', "emit-assembly", HelpText = "Emit an assembly file, but do not assemble or link it.")]
+        public bool EmitAssembly { get; set; }
+
+        [Option("keep", HelpText = "Keep the intermediate files generated during compilation (for debugging).")]
+        public bool KeepIntermediateFiles { get; set; }
     }
 }

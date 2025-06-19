@@ -1,14 +1,11 @@
 // Copyright (c) Doug Swisher. All Rights Reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-namespace SwishCC.IntegrationTests.Models
+namespace SwishCC.Models.AssemblyTree
 {
-    public enum Stage
+    public enum AssemblyUnaryOperator
     {
-        Lex,
-        Parse,
-        Tacky,
-        CodeGen,
-        CompileAndRun
+        Neg,
+        Not
     }
 }

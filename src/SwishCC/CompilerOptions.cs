@@ -5,7 +5,7 @@ using CommandLine;
 
 namespace SwishCC
 {
-    public class Options
+    public class CompilerOptions
     {
         [Option("quiet", HelpText = "Do not emit progress messages.")]
         public bool Quiet { get; set; }

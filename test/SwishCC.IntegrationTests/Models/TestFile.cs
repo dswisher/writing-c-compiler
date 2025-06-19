@@ -8,7 +8,10 @@ namespace SwishCC.IntegrationTests.Models
         public string FullPath { get; init; }
         public string SubPath { get; init; }
         public bool IsValid { get; init; }
+
+        public string FullExecutablePath { get; init; }
         public int ExpectedExitCode { get; set; }
+        public string ExpectedStandardOutput { get; set; }
 
 
         public override string ToString()

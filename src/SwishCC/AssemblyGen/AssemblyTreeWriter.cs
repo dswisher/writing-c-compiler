@@ -47,6 +47,12 @@ namespace SwishCC.AssemblyGen
             {
                 writer.WriteLine($"    Stack({stack.StackSize})");
             }
+            else if (instruction is AssemblyUnaryInstructionNode unary)
+            {
+                var dst = Decode(unary.Operand);
+
+                writer.WriteLine($"    Unary({unary.UnaryOperator}, {dst})");
+            }
             else
             {
                 throw new DumpException($"Unsupported assembly instruction: {instruction.GetType().Name}");
@@ -60,6 +66,7 @@ namespace SwishCC.AssemblyGen
             {
                 AssemblyImmediateOperandNode imm => $"Imm({imm.Value})",
                 AssemblyRegisterOperandNode reg => $"Reg({reg.Register})",
+                AssemblyPseudoOperandNode pseudo => $"Pseudo({pseudo.Name})",
                 _ => throw new DumpException($"Unsupported assembly operand: {value.GetType().Name}")
             };
         }

@@ -4,9 +4,9 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using SwishCC.AssemblyEmission;
 using SwishCC.AssemblyGen;
 using SwishCC.Lexing;
-using SwishCC.Models.CTree;
 using SwishCC.Parsing;
 using SwishCC.Tackying;
 
@@ -14,7 +14,7 @@ namespace SwishCC
 {
     public class Driver
     {
-        public int Run(Options options)
+        public int Run(CompilerOptions options)
         {
             // Sanity check
             if (!File.Exists(options.FilePath))
@@ -112,10 +112,28 @@ namespace SwishCC
                     assemblyTreeWriter.Write(assemblyAst, context.AssemblyTreeFilePath);
                 }
 
+                if (options.CodeGenOnly)
+                {
+                    return 0;
+                }
+
                 // Emit the assembly
-                // TODO - emit the assembly
+                if (!options.Quiet)
+                {
+                    Console.WriteLine("Emitting assembly...");
+                }
+
+                var assemblyEmitter = new AssemblyEmitter();
+
+                assemblyEmitter.Emit(assemblyAst, context.AssemblyFilePath);
+
+                if (options.EmitAssembly)
+                {
+                    return 0;
+                }
 
                 // Assemble and link
+                // TODO - check the architecture if on Mac, and don't assemble if it's not x86_64
                 if (!AssembleAndLink(context))
                 {
                     return 4;
@@ -132,7 +150,7 @@ namespace SwishCC
         }
 
 
-        private static Context CreateContext(Options options)
+        private static Context CreateContext(CompilerOptions options)
         {
             var path = Path.GetDirectoryName(options.FilePath);
             var baseFileName = Path.GetFileNameWithoutExtension(options.FilePath);
@@ -174,10 +192,15 @@ namespace SwishCC
             var output = process.StandardOutput.ReadToEnd();
             var error = process.StandardError.ReadToEnd();
 
-            // TODO - do something with the output and error
+            if (process.ExitCode != 0)
+            {
+                Console.WriteLine(output);
+                Console.WriteLine(error);
+
+                return false;
+            }
 
             // No errors!
-            // TODO - actually check for errors
             return true;
         }
 
@@ -257,16 +280,19 @@ namespace SwishCC
                 File.Delete(context.PreprocessedFilePath);
             }
 
-            if (File.Exists(context.AssemblyFilePath))
+            if (!context.Options.EmitAssembly)
             {
-                File.Delete(context.AssemblyFilePath);
+                if (File.Exists(context.AssemblyFilePath))
+                {
+                    File.Delete(context.AssemblyFilePath);
+                }
             }
         }
 
 
         private class Context
         {
-            public Options Options { get; set; }
+            public CompilerOptions Options { get; set; }
 
             public string InputFilePath { get; set; }
             public string PreprocessedFilePath { get; set; }

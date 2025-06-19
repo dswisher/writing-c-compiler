@@ -27,7 +27,8 @@ namespace SwishCC.Tackying
         {
             var tackyFunction = new TackyFunctionNode
             {
-                Name = new IdentifierNode(cFunction.Name.Value)
+                // TODO - only prepend an underscore if this is a Mac
+                Name = new IdentifierNode($"_{cFunction.Name.Value}")
             };
 
             ConvertCTree(tackyFunction, cFunction.Body);
@@ -51,7 +52,6 @@ namespace SwishCC.Tackying
 
         private TackyAbstractValueNode ConvertCTree(CAbstractExpressionNode exp, List<TackyAbstractInstructionNode> instructions)
         {
-            // TODO - need to handle general expressions, for now, just handle constants
             if (exp is CConstantExpressionNode cce)
             {
                 return new TackyConstantValueNode

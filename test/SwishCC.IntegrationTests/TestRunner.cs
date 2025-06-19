@@ -5,8 +5,6 @@ using System;
 using System.Diagnostics;
 using SwishCC.Exceptions;
 using SwishCC.IntegrationTests.Models;
-using DriverOps = SwishCC.Options;
-using TestOps = SwishCC.IntegrationTests.Models.Options;
 
 namespace SwishCC.IntegrationTests
 {
@@ -15,25 +13,42 @@ namespace SwishCC.IntegrationTests
         private readonly TestSeeker testSeeker = new();
 
 
-        public int Run(TestOps options)
+        public int Run(TestRunnerOptions options)
         {
             // Time it
             var timer = Stopwatch.StartNew();
 
-            // Load the list of expected results
-            // TODO
-
             // Find all the test files that should be run - a list of file paths, relative to the test directory
             var testFiles = testSeeker.FindTests(options);
+            if (testFiles == null)
+            {
+                Console.WriteLine("Could not load test files.");
+                return 12;
+            }
 
             Console.WriteLine($"Found {testFiles.Count} test files.");
 
             // Go through and run each test
             var failedTests = 0;
             var passedTests = 0;
+            var first = true;
 
             foreach (var testFile in testFiles)
             {
+                if (first)
+                {
+                    first = false;
+                }
+                else if (options.Verbose)
+                {
+                    Console.WriteLine();
+                }
+
+                if (options.Verbose)
+                {
+                    Console.WriteLine($"******************* {testFile.SubPath} *******************");
+                }
+
                 var compilerResult = RunOneTest(options, testFile);
 
                 if (testFile.IsValid)
@@ -51,10 +66,40 @@ namespace SwishCC.IntegrationTests
                     }
                     else
                     {
-                        // TODO - if we compiled, run the resulting executable and check the result code
-                        Console.WriteLine($"Valid test {testFile.SubPath} passed.");
+                        if (options.Stage == Stage.CompileAndRun)
+                        {
+                            // Run the executable and verify the proper exit code
+                            if (options.Verbose)
+                            {
+                                Console.WriteLine($"Running executable {testFile.SubPath}, expecting exit code {testFile.ExpectedExitCode}...");
+                            }
 
-                        passedTests += 1;
+                            var exitCode = RunProgram(testFile);
+
+                            if (exitCode != testFile.ExpectedExitCode)
+                            {
+                                Console.WriteLine($"Valid test {testFile.SubPath} FAILED! Expected exit code {testFile.ExpectedExitCode}, but got {exitCode}.");
+
+                                failedTests += 1;
+
+                                if (options.StopOnFailure)
+                                {
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                Console.WriteLine($"Valid test {testFile.SubPath} passed, properly returned exit code {exitCode}.");
+
+                                passedTests += 1;
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Valid test {testFile.SubPath} passed.");
+
+                            passedTests += 1;
+                        }
                     }
                 }
                 else
@@ -87,22 +132,37 @@ namespace SwishCC.IntegrationTests
         }
 
 
-        private static int RunOneTest(TestOps options, TestFile testFile)
+        private static int RunProgram(TestFile testFile)
+        {
+            var startInfo = new ProcessStartInfo();
+            startInfo.FileName = testFile.FullExecutablePath;
+            var process = new Process();
+            process.StartInfo = startInfo;
+            process.Start();
+            process.WaitForExit();
+
+            return process.ExitCode;
+        }
+
+
+        private static int RunOneTest(TestRunnerOptions options, TestFile testFile)
         {
             try
             {
                 var driver = new Driver();
-                var driverOptions = new DriverOps
+                var driverOptions = new CompilerOptions
                 {
                     LexerOnly = options.Stage == Stage.Lex,
                     ParseOnly = options.Stage == Stage.Parse,
                     TackyOnly = options.Stage == Stage.Tacky,
                     CodeGenOnly = options.Stage == Stage.CodeGen,
+                    EmitAssembly = options.EmitAssembly,
                     FilePath = testFile.FullPath,
                     Quiet = !options.Verbose,
                     DumpCTree = options.DumpCTree,
                     DumpTacky = options.DumpTacky,
                     DumpAssemblyTree = options.DumpAssemblyTree,
+                    KeepIntermediateFiles = options.KeepIntermediateFiles
                 };
 
                 return driver.Run(driverOptions);
@@ -115,8 +175,9 @@ namespace SwishCC.IntegrationTests
             {
                 return 2;
             }
-            catch (CompilerException)
+            catch (CompilerException ex)
             {
+                Console.WriteLine(ex.Message);
                 return 3;
             }
             catch (Exception)

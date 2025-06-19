@@ -41,7 +41,7 @@ namespace SwishCC.Parsing
             // Parse the function body
             tokens.ExpectAndPopToken(TokenType.LeftCurly);
 
-            // TODO - parse statements - this is a quick hack
+            // TODO - parse statements - right now, all that is allowed is a single return statement
             functionNode.Body = ParseReturn(tokens);
 
             tokens.ExpectAndPopToken(TokenType.Semicolon);

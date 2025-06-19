@@ -1,9 +1,9 @@
 // Copyright (c) Doug Swisher. All Rights Reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Text;
+using SwishCC.Exceptions;
 
 namespace SwishCC.Lexing
 {
@@ -50,7 +50,7 @@ namespace SwishCC.Lexing
         {
             if (ch == -1)
             {
-                throw new Exception("Attempt to append EOF to character buffer.");
+                throw new LexerException("Attempt to append EOF to character buffer.");
             }
 
             if (characterBuffer.Length == 0)
@@ -68,8 +68,7 @@ namespace SwishCC.Lexing
             // Figure out what type of token to create
             if (!charMap.TryGetValue(ch, out var tokenType))
             {
-                // TODO - custom lexer exception
-                throw new Exception($"Do not know how to emit token for character '{(char)ch}'");
+                throw new LexerException($"Do not know how to emit token for character '{(char)ch}'");
             }
 
             AppendCharacter(ch);

@@ -13,7 +13,7 @@ namespace SwishCC
             try
             {
                 var driver = new Driver();
-                var parsed = Parser.Default.ParseArguments<Options>(args);
+                var parsed = Parser.Default.ParseArguments<CompilerOptions>(args);
 
                 return parsed.MapResult(
                     options => driver.Run(options),

@@ -20,7 +20,7 @@ namespace SwishCC.IntegrationTests
                     with.HelpWriter = Console.Error;
                 });
 
-                var parsed = parser.ParseArguments<Models.Options>(args);
+                var parsed = parser.ParseArguments<Models.TestRunnerOptions>(args);
 
                 return parsed.MapResult(
                     options => runner.Run(options),

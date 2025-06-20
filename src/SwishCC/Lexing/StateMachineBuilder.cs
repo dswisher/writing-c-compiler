@@ -46,7 +46,7 @@ namespace SwishCC.Lexing
                     ctx.LexerReader.Advance();
                     ctx.CurrentState = sawHyphen;
                 })
-                .AddTransition(";{}()~", (ch, ctx) =>
+                .AddTransition(";{}()~+*/%", (ch, ctx) =>
                 {
                     ctx.EmitToken(ch);
                     ctx.LexerReader.Advance();

@@ -15,6 +15,10 @@ namespace SwishCC.Lexing
         Tilde,
         Hyphen,
         TwoHyphens,
+        Plus,
+        Star,
+        Slash,
+        Percent,
 
         // Identifiers, keywords, and literals
         Identifier,

@@ -167,12 +167,14 @@ namespace SwishCC.IntegrationTests
 
                 return driver.Run(driverOptions);
             }
-            catch (LexerException)
+            catch (LexerException ex)
             {
+                Console.WriteLine(ex.Message);
                 return 1;
             }
-            catch (ParseException)
+            catch (ParseException ex)
             {
+                Console.WriteLine(ex.Message);
                 return 2;
             }
             catch (CompilerException ex)

@@ -25,6 +25,10 @@ namespace SwishCC.Lexing
             charMap.Add(')', TokenType.RightParen);
             charMap.Add(';', TokenType.Semicolon);
             charMap.Add('~', TokenType.Tilde);
+            charMap.Add('+', TokenType.Plus);
+            charMap.Add('*', TokenType.Star);
+            charMap.Add('/', TokenType.Slash);
+            charMap.Add('%', TokenType.Percent);
         }
 
 

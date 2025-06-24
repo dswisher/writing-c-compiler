@@ -28,6 +28,8 @@ namespace SwishCC.UnitTests.Parsing
         [InlineData("1 + 2", "1 2 +")]
         [InlineData("2 - 1", "2 1 -")]
         [InlineData("1 + 2 + 3", "1 2 + 3 +")]
+        [InlineData("1 + 2 * 3", "1 2 3 * +")]
+        [InlineData("1 * 2 - 3 * (4 + 5)", "1 2 * 3 4 5 + * -")]
         public void CanParseExpressions(string expr, string expected)
         {
             // Arrange

@@ -1,6 +1,7 @@
 // Copyright (c) Doug Swisher. All Rights Reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using System.Collections.Generic;
 using SwishCC.Exceptions;
 using SwishCC.Lexing;
 using SwishCC.Models.CTree;
@@ -9,16 +10,29 @@ namespace SwishCC.Parsing
 {
     public class ExpressionParser
     {
-        public CAbstractExpressionNode ParseExpression(LexerResult tokens)
+        private readonly Dictionary<TokenType, int> binaryOperatorPrecedence = new()
+        {
+            { TokenType.Star, 50 },
+            { TokenType.Slash, 50 },
+            { TokenType.Percent, 50 },
+            { TokenType.Plus, 45 },
+            { TokenType.Hyphen, 45 },
+        };
+
+
+        public CAbstractExpressionNode ParseExpression(LexerResult tokens, int minPrecedence = 0)
         {
             var left = ParseFactor(tokens);
+            var nextToken = tokens.CurrentToken;
 
-            while (tokens.CurrentToken?.TokenType == TokenType.Plus || tokens.CurrentToken?.TokenType == TokenType.Hyphen)
+            while (nextToken != null && IsBinaryOperator(nextToken.TokenType) && binaryOperatorPrecedence[nextToken.TokenType] >= minPrecedence)
             {
                 var binOp = ParseBinaryOperator(tokens.PopToken());
-                var right = ParseFactor(tokens);
+                var right = ParseExpression(tokens, binaryOperatorPrecedence[nextToken.TokenType] + 1);
 
                 left = new CBinaryExpressionNode(binOp, left, right);
+
+                nextToken = tokens.CurrentToken;
             }
 
             return left;
@@ -66,8 +80,20 @@ namespace SwishCC.Parsing
         }
 
 
+        private static bool IsBinaryOperator(TokenType tokenType)
+        {
+            return tokenType == TokenType.Plus
+                   || tokenType == TokenType.Hyphen
+                   || tokenType == TokenType.Star
+                   || tokenType == TokenType.Slash
+                   || tokenType == TokenType.Percent;
+        }
+
+
         private static CBinaryOperator ParseBinaryOperator(LexerToken token)
         {
+            // TODO - replace this code, and IsBinaryOperator, with a dictionary lookup
+
             if (token.TokenType == TokenType.Hyphen)
             {
                 return CBinaryOperator.Subtract;
@@ -76,6 +102,21 @@ namespace SwishCC.Parsing
             if (token.TokenType == TokenType.Plus)
             {
                 return CBinaryOperator.Add;
+            }
+
+            if (token.TokenType == TokenType.Star)
+            {
+                return CBinaryOperator.Multiply;
+            }
+
+            if (token.TokenType == TokenType.Slash)
+            {
+                return CBinaryOperator.Divide;
+            }
+
+            if (token.TokenType == TokenType.Percent)
+            {
+                return CBinaryOperator.Remainder;
             }
 
             throw new ParseException(token, $"Unexpected token {token.TokenType} ({token.Value}) when parsing binary operator.");

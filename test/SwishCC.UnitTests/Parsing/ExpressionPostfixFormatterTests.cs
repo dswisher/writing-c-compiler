@@ -19,7 +19,7 @@ namespace SwishCC.UnitTests.Parsing
         public void CanFormatConstantExpression(int val)
         {
             // Arrange
-            var constant = new CConstantExpressionNode { Value = val };
+            var constant = new CConstantExpressionNode(val);
             var expected = val.ToString();
 
             // Act
@@ -36,12 +36,8 @@ namespace SwishCC.UnitTests.Parsing
         public void CanFormatSimpleUnaryExpression(CUnaryOperator op, string expected)
         {
             // Arrange
-            var constant = new CConstantExpressionNode { Value = 16 };
-            var unary = new CUnaryExpressionNode
-            {
-                Operator = op,
-                Operand = constant
-            };
+            var constant = new CConstantExpressionNode(16);
+            var unary = new CUnaryExpressionNode(op, constant);
 
             // Act
             var result = formatter.Format(unary);
@@ -55,17 +51,9 @@ namespace SwishCC.UnitTests.Parsing
         public void CanFormatCompoundUnaryExpression()
         {
             // Arrange
-            var constant = new CConstantExpressionNode { Value = 316 };
-            var unary1 = new CUnaryExpressionNode
-            {
-                Operator = CUnaryOperator.Complement,
-                Operand = constant
-            };
-            var unary2 = new CUnaryExpressionNode
-            {
-                Operator = CUnaryOperator.Negation,
-                Operand = unary1
-            };
+            var constant = new CConstantExpressionNode(316);
+            var unary1 = new CUnaryExpressionNode(CUnaryOperator.Complement, constant);
+            var unary2 = new CUnaryExpressionNode(CUnaryOperator.Negation, unary1);
 
             // Act
             var result = formatter.Format(unary2);
@@ -79,14 +67,9 @@ namespace SwishCC.UnitTests.Parsing
         public void CanFormatSimpleBinaryExpression()
         {
             // Arrange
-            var constant1 = new CConstantExpressionNode { Value = 2 };
-            var constant2 = new CConstantExpressionNode { Value = 3 };
-            var binary = new CBinaryExpressionNode
-            {
-                Operator = CBinaryOperator.Add,
-                Left = constant1,
-                Right = constant2
-            };
+            var constant1 = new CConstantExpressionNode(2);
+            var constant2 = new CConstantExpressionNode(3);
+            var binary = new CBinaryExpressionNode(CBinaryOperator.Add, constant1, constant2);
 
             // Act
             var result = formatter.Format(binary);

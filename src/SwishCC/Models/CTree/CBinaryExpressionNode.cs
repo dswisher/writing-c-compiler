@@ -5,8 +5,16 @@ namespace SwishCC.Models.CTree
 {
     public class CBinaryExpressionNode : CAbstractExpressionNode
     {
-        public CBinaryOperator Operator { get; set; }
-        public CAbstractExpressionNode Left { get; set; }
-        public CAbstractExpressionNode Right { get; set; }
+        public CBinaryExpressionNode(CBinaryOperator operatorType, CAbstractExpressionNode left, CAbstractExpressionNode right)
+        {
+            Operator = operatorType;
+            Left = left;
+            Right = right;
+        }
+
+
+        public CBinaryOperator Operator { get; }
+        public CAbstractExpressionNode Left { get; }
+        public CAbstractExpressionNode Right { get; }
     }
 }

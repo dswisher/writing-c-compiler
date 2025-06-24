@@ -25,6 +25,9 @@ namespace SwishCC.UnitTests.Parsing
         [InlineData("(-2)", "2 NEG")]
         [InlineData("~(-2)", "2 NEG ~")]
         [InlineData("-(~2)", "2 ~ NEG")]
+        [InlineData("1 + 2", "1 2 +")]
+        [InlineData("2 - 1", "2 1 -")]
+        [InlineData("1 + 2 + 3", "1 2 + 3 +")]
         public void CanParseExpressions(string expr, string expected)
         {
             // Arrange

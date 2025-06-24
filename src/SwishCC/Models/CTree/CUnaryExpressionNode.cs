@@ -5,7 +5,13 @@ namespace SwishCC.Models.CTree
 {
     public class CUnaryExpressionNode : CAbstractExpressionNode
     {
-        public CUnaryOperator Operator { get; set; }
-        public CAbstractExpressionNode Operand { get; set; }
+        public CUnaryExpressionNode(CUnaryOperator unaryOp, CAbstractExpressionNode operand)
+        {
+            Operator = unaryOp;
+            Operand = operand;
+        }
+
+        public CUnaryOperator Operator { get; }
+        public CAbstractExpressionNode Operand { get; }
     }
 }

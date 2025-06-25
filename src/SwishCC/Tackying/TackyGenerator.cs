@@ -78,6 +78,26 @@ namespace SwishCC.Tackying
                 return dst;
             }
 
+            if (exp is CBinaryExpressionNode cbe)
+            {
+                var src1 = ConvertCTree(cbe.Left, instructions);
+                var src2 = ConvertCTree(cbe.Right, instructions);
+                var dst = new TackyVariableValueNode(MakeTemporary());
+                var op = cbe.Operator.ToTacky();
+
+                var binary = new TackyBinaryInstructionNode
+                {
+                    Operator = op,
+                    Source1 = src1,
+                    Source2 = src2,
+                    Destination = dst
+                };
+
+                instructions.Add(binary);
+
+                return dst;
+            }
+
             throw new CompilerException($"Emitting tacky for {exp.GetType().Name} is not yet implemented");
         }
 

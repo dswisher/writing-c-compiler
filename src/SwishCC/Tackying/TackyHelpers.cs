@@ -18,5 +18,19 @@ namespace SwishCC.Tackying
                 _ => throw new ArgumentOutOfRangeException(nameof(unaryOperator), unaryOperator, null)
             };
         }
+
+
+        public static TackyBinaryOperator ToTacky(this CBinaryOperator binaryOperator)
+        {
+            return binaryOperator switch
+            {
+                CBinaryOperator.Add => TackyBinaryOperator.Add,
+                CBinaryOperator.Subtract => TackyBinaryOperator.Subtract,
+                CBinaryOperator.Multiply => TackyBinaryOperator.Multiply,
+                CBinaryOperator.Divide => TackyBinaryOperator.Divide,
+                CBinaryOperator.Remainder => TackyBinaryOperator.Remainder,
+                _ => throw new ArgumentOutOfRangeException(nameof(binaryOperator), binaryOperator, null)
+            };
+        }
     }
 }

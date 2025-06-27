@@ -39,15 +39,12 @@ namespace SwishCC.IntegrationTests
                 {
                     first = false;
                 }
-                else if (options.Verbose)
+                else
                 {
                     Console.WriteLine();
                 }
 
-                if (options.Verbose)
-                {
-                    Console.WriteLine($"******************* {testFile.SubPath} *******************");
-                }
+                Console.WriteLine($"******************* {testFile.SubPath} *******************");
 
                 var compilerResult = RunOneTest(options, testFile);
 
@@ -89,14 +86,14 @@ namespace SwishCC.IntegrationTests
                             }
                             else
                             {
-                                Console.WriteLine($"Valid test {testFile.SubPath} passed, properly returned exit code {exitCode}.");
+                                Console.WriteLine($"Valid test {testFile.SubPath} PASSED, properly returned exit code {exitCode}.");
 
                                 passedTests += 1;
                             }
                         }
                         else
                         {
-                            Console.WriteLine($"Valid test {testFile.SubPath} passed.");
+                            Console.WriteLine($"Valid test {testFile.SubPath} PASSED.");
 
                             passedTests += 1;
                         }
@@ -117,7 +114,7 @@ namespace SwishCC.IntegrationTests
                     }
                     else
                     {
-                        Console.WriteLine($"Invalid test {testFile.SubPath} passed, with exit code {compilerResult}.");
+                        Console.WriteLine($"Invalid test {testFile.SubPath} PASSED, with exit code {compilerResult}.");
 
                         passedTests += 1;
                     }
@@ -169,17 +166,17 @@ namespace SwishCC.IntegrationTests
             }
             catch (LexerException ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine("Lexer Error: {0}", ex.Message);
                 return 1;
             }
             catch (ParseException ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine("Parser Error: {0}", ex.Message);
                 return 2;
             }
             catch (CompilerException ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine("Compiler Error: {0}", ex.Message);
                 return 3;
             }
             catch (Exception)

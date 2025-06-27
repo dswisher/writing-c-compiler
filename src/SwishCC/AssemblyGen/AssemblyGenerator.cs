@@ -76,6 +76,54 @@ namespace SwishCC.AssemblyGen
                 // Unary(unary_operator, dst)
                 instructions.Add(new AssemblyUnaryInstructionNode(Convert(unary.Operator), dst));
             }
+            else if (tackyInstruction is TackyBinaryInstructionNode binary)
+            {
+                if (binary.Operator == TackyBinaryOperator.Divide || binary.Operator == TackyBinaryOperator.Remainder)
+                {
+                    // Mov(src1, Reg(AX))
+                    var src1 = ConvertTacky(binary.Source1);
+                    var regAx = new AssemblyRegisterOperandNode(AssemblyRegister.AX);
+
+                    instructions.Add(new AssemblyMoveInstructionNode(src1, regAx));
+
+                    // Cdq
+                    instructions.Add(new AssemblyCdqInstructionNode());
+
+                    // Idiv(src2)
+                    var src2 = ConvertTacky(binary.Source2);
+
+                    instructions.Add(new AssemblyIDivInstructionNode(src2));
+
+                    if (binary.Operator == TackyBinaryOperator.Divide)
+                    {
+                        // Mov(Reg(AX), dst)
+                        var dst = ConvertTacky(binary.Destination);
+
+                        instructions.Add(new AssemblyMoveInstructionNode(regAx, dst));
+                    }
+                    else
+                    {
+                        // Mov(Reg(DX), dst)
+                        var regDx = new AssemblyRegisterOperandNode(AssemblyRegister.DX);
+                        var dst = ConvertTacky(binary.Destination);
+
+                        instructions.Add(new AssemblyMoveInstructionNode(regDx, dst));
+                    }
+                }
+                else
+                {
+                    // Mov(src1, dst)
+                    var src1 = ConvertTacky(binary.Source1);
+                    var dst = ConvertTacky(binary.Destination);
+
+                    instructions.Add(new AssemblyMoveInstructionNode(src1, dst));
+
+                    // Binary(op, src2, dst)
+                    var src2 = ConvertTacky(binary.Source2);
+
+                    instructions.Add(new AssemblyBinaryInstructionNode(Convert(binary.Operator), src2, dst));
+                }
+            }
             else
             {
                 throw new CompilerException($"Don't know how to convert tacky instruction of type {tackyInstruction.GetType().Name}");
@@ -115,6 +163,25 @@ namespace SwishCC.AssemblyGen
         }
 
 
+        private static AssemblyBinaryOperator Convert(TackyBinaryOperator tacky)
+        {
+            switch (tacky)
+            {
+                case TackyBinaryOperator.Add:
+                    return AssemblyBinaryOperator.Add;
+
+                case TackyBinaryOperator.Subtract:
+                    return AssemblyBinaryOperator.Sub;
+
+                case TackyBinaryOperator.Multiply:
+                    return AssemblyBinaryOperator.Mult;
+
+                default:
+                    throw new CompilerException($"Don't know how to convert tacky binary operator {tacky}");
+            }
+        }
+
+
         private static (List<AssemblyAbstractInstructionNode> Instructions, int StackSize) ReplacePseudoRegisters(List<AssemblyAbstractInstructionNode> inputList)
         {
             // Create the result list and the map of pseudo registers to stack offsets
@@ -137,7 +204,24 @@ namespace SwishCC.AssemblyGen
 
                     outputList.Add(new AssemblyUnaryInstructionNode(unary.UnaryOperator, operand));
                 }
+                else if (inputInstruction is AssemblyBinaryInstructionNode binary)
+                {
+                    var arg1 = ReplaceOperand(pseudoMap, binary.Operand1);
+                    var arg2 = ReplaceOperand(pseudoMap, binary.Operand2);
+
+                    outputList.Add(new AssemblyBinaryInstructionNode(binary.BinaryOperator, arg1, arg2));
+                }
+                else if (inputInstruction is AssemblyIDivInstructionNode div)
+                {
+                    var arg = ReplaceOperand(pseudoMap, div.Operand);
+
+                    outputList.Add(new AssemblyIDivInstructionNode(arg));
+                }
                 else if (inputInstruction is AssemblyReturnInstructionNode)
+                {
+                    outputList.Add(inputInstruction);
+                }
+                else if (inputInstruction is AssemblyCdqInstructionNode)
                 {
                     outputList.Add(inputInstruction);
                 }
@@ -150,6 +234,7 @@ namespace SwishCC.AssemblyGen
             // Return the result
             return (outputList, pseudoMap.Count * 4);
         }
+
 
         private static AssemblyAbstractOperandNode ReplaceOperand(Dictionary<string, int> pseudoMap, AssemblyAbstractOperandNode input)
         {

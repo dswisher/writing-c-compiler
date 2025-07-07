@@ -25,8 +25,13 @@ namespace SwishCC.AssemblyGen
             // Replace pseudo register operands with stack operands
             (instructions, var stackSize) = ReplacePseudoRegisters(instructions);
 
+            // Add the stack instructions. Icky to do it this way (insert in a list), but it works.
+            instructions.Insert(0, new AssemblyAllocateStackInstructionNode(stackSize));
+
             // Rewrite any invalid Mov instructions
-            instructions = AddStackAndReplaceInvalidMovInstructions(instructions, stackSize);
+            var fixerUpper = new AssemblyInstructionFixerUpper();
+
+            instructions = fixerUpper.FixInstructions(instructions);
 
             // Save the list of instructions we have created
             assembly.FunctionDefinition.Instructions = instructions;
@@ -252,42 +257,6 @@ namespace SwishCC.AssemblyGen
 
             // For everything else, just return it
             return input;
-        }
-
-
-        private static List<AssemblyAbstractInstructionNode> AddStackAndReplaceInvalidMovInstructions(List<AssemblyAbstractInstructionNode> inputList, int stackSize)
-        {
-            // Create the result list
-            var outputList = new List<AssemblyAbstractInstructionNode>();
-
-            // Add the allocate stack instruction to start
-            outputList.Add(new AssemblyAllocateStackInstructionNode(stackSize));
-
-            // Go through all the input instructions, looking for invalid mov instructions
-            foreach (var inputInstruction in inputList)
-            {
-                if (inputInstruction is AssemblyMoveInstructionNode move)
-                {
-                    if (move.Source is AssemblyStackOperandNode src && move.Destination is AssemblyStackOperandNode dst)
-                    {
-                        var temp = new AssemblyRegisterOperandNode(AssemblyRegister.R10);
-
-                        outputList.Add(new AssemblyMoveInstructionNode(src, temp));
-                        outputList.Add(new AssemblyMoveInstructionNode(temp, dst));
-                    }
-                    else
-                    {
-                        outputList.Add(inputInstruction);
-                    }
-                }
-                else
-                {
-                    outputList.Add(inputInstruction);
-                }
-            }
-
-            // Return the result
-            return outputList;
         }
     }
 }
